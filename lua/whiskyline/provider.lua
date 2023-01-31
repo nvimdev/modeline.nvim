@@ -104,7 +104,7 @@ function pd.fileinfo()
   local result = {
     stl = table.concat({ unpack(parts, #parts - 1) }, sep) .. '%m',
     name = 'fileinfo',
-    event = 'BufEnter',
+    event = { 'BufEnter' },
   }
 
   if not pd.initialized then
@@ -282,7 +282,7 @@ end
 function pd.diagInfo()
   local result = {
     stl = diagnostic_info(3),
-    name = 'diagWarn',
+    name = 'diaginfo',
     event = 'DiagnosticChanged',
   }
   if not pd.initialized then
@@ -294,7 +294,7 @@ end
 function pd.diagHint()
   local result = {
     stl = diagnostic_info(4),
-    name = 'diagWarn',
+    name = 'diaghint',
     event = 'DiagnosticChanged',
   }
   if not pd.initialized then
