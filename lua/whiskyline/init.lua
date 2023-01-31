@@ -118,7 +118,7 @@ function whk.setup()
   })
 
   api.nvim_create_autocmd(
-    { 'DiagnosticChanged', 'LspAttach', 'ModeChanged', 'WinEnter', 'BufEnter', 'CursorHold' },
+    { 'DiagnosticChanged', 'ModeChanged', 'WinEnter', 'BufEnter', 'CursorHold' },
     {
       callback = function(opt)
         local status, stl = co.resume(stl_render, opt.event)
