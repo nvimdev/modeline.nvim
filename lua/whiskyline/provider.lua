@@ -293,7 +293,7 @@ end
 
 function pd.diagHint()
   local result = {
-    stl = diagnostic_info(3),
+    stl = diagnostic_info(4),
     name = 'diagWarn',
     event = 'DiagnosticChanged',
   }
