@@ -137,7 +137,7 @@ function pd.lsp()
   local result = {
     stl = table.concat(res, ''),
     name = 'Lsp',
-    event = { 'LspProgressUpdate', 'CursorHold' },
+    event = { 'LspProgressUpdate', 'BufEnter' },
   }
 
   if not pd.initialized then
