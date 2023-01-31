@@ -3,6 +3,7 @@
 - async using coroutine
 - blazing fast with cache
 - Lsp progres message
+- mini
 
 my perosnal statusline not support configuration.
 
