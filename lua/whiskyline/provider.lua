@@ -140,7 +140,7 @@ function pd.lsp()
   end
 
   local result = {
-    stl = table.concat(res, ''),
+    stl = '%.38{"' .. table.concat(res, '') .. '"}',
     name = 'Lsp',
     event = { 'LspProgressUpdate', 'BufEnter' },
   }
