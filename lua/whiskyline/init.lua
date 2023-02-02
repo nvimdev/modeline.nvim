@@ -107,13 +107,13 @@ function whk.setup()
 
       local status, stl = co.resume(stl_render, opt.event)
       if status then
-        vim.wo.stl = stl
+        vim.opt.stl = stl
       end
       -- run once again make sure it update the lsp name
       if opt.event == 'LspProgressUpdate' then
         status, stl = co.resume(stl_render, opt.event)
         if status then
-          vim.wo.stl = stl
+          vim.opt.stl = stl
         end
       end
     end,
@@ -125,7 +125,7 @@ function whk.setup()
       callback = function(opt)
         local status, stl = co.resume(stl_render, opt.event)
         if status then
-          vim.wo.stl = stl
+          vim.opt.stl = stl
         end
       end,
     }
