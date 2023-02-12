@@ -4,14 +4,16 @@ local pd = {}
 pd.initialized = false
 
 local function stl_bg()
-  local ok, stl = pcall(api.nvim_get_hl_by_name, 'StatusLine', true)
-  return ok and stl.background or 'NONE'
+  -- local ok, stl = pcall(api.nvim_get_hl_by_name, '@parameter', true)
+  -- return ok and stl.foreground or 'NONE'
+  return '#363646'
 end
 
-local function stl_attr(group)
+local function stl_attr(group, trans)
   local color = api.nvim_get_hl_by_name(group, true)
+  trans = trans or false
   return {
-    bg = stl_bg(),
+    bg = trans and 'NONE' or stl_bg(),
     fg = color.foreground,
   }
 end
@@ -58,13 +60,6 @@ end
 
 local function path_sep()
   return uv.os_uname().sysname == 'Windows_NT' and '\\' or '/'
-end
-
-function pd.sep()
-  return {
-    stl = ' ',
-    name = 'sep',
-  }
 end
 
 local resolve
@@ -178,7 +173,7 @@ function pd.gitadd()
     event = { 'CursorHold', 'GitSignsUpdate' },
   }
   if not pd.initialized then
-    result.attr = stl_attr('diffAdded')
+    result.attr = stl_attr('diffAdded', true)
   end
   return result
 end
@@ -192,7 +187,7 @@ function pd.gitchange()
   }
 
   if not pd.initialized then
-    result.attr = stl_attr('diffChanged')
+    result.attr = stl_attr('diffChanged', true)
   end
   return result
 end
@@ -206,7 +201,7 @@ function pd.gitdelete()
   }
 
   if not pd.initialized then
-    result.attr = stl_attr('diffRemoved')
+    result.attr = stl_attr('diffRemoved', true)
   end
   return result
 end
@@ -215,7 +210,7 @@ function pd.branch()
   local icon = ' '
   local res = gitsigns_data('head')
   local result = {
-    stl = #res > 0 and icon .. res or res,
+    stl = #res > 0 and icon .. res or 'UNKOWN',
     name = 'gitbranch',
     event = { 'CursorHold', 'GitSignsUpdate' },
   }
@@ -230,6 +225,10 @@ function pd.pad()
   return {
     stl = '%=',
     name = 'pad',
+    attr = {
+      background = 'NONE',
+      foreground = 'NONE',
+    },
   }
 end
 
@@ -258,7 +257,7 @@ local function diagnostic_info(severity)
     ' ',
   }
   local count = #vim.diagnostic.get(0, { severity = severity })
-  return count == 0 and '' or signs[severity] .. tostring(count)
+  return count == 0 and '' or signs[severity] .. tostring(count) .. ' '
 end
 
 function pd.diagError()
@@ -268,7 +267,7 @@ function pd.diagError()
     event = { 'DiagnosticChanged', 'BufEnter' },
   }
   if not pd.initialized then
-    result.attr = stl_attr('DiagnosticError')
+    result.attr = stl_attr('DiagnosticError', true)
   end
   return result
 end
@@ -280,7 +279,7 @@ function pd.diagWarn()
     event = { 'DiagnosticChanged', 'BufEnter' },
   }
   if not pd.initialized then
-    result.attr = stl_attr('DiagnosticWarn')
+    result.attr = stl_attr('DiagnosticWarn', true)
   end
   return result
 end
@@ -292,7 +291,7 @@ function pd.diagInfo()
     event = { 'DiagnosticChanged', 'BufEnter' },
   }
   if not pd.initialized then
-    result.attr = stl_attr('DiagnosticInfo')
+    result.attr = stl_attr('DiagnosticInfo', true)
   end
   return result
 end
@@ -304,7 +303,7 @@ function pd.diagHint()
     event = { 'DiagnosticChanged', 'BufEnter' },
   }
   if not pd.initialized then
-    result.attr = stl_attr('DiagnosticHint')
+    result.attr = stl_attr('DiagnosticHint', true)
   end
   return result
 end

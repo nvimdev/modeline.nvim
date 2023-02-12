@@ -56,34 +56,55 @@ end
 
 local function default()
   local p = require('whiskyline.provider')
+  local s = require('whiskyline.seperator')
   return {
-    p.sep,
+    --
+    s.l_left,
     p.mode,
-    p.sep,
+    s.l_right,
+    --
+    s.sep,
+    --
+    s.l_left,
     p.fileicon,
     p.fileinfo,
-    p.sep,
+    s.l_right,
+    --
+    s.sep,
+    --
+    s.l_left,
     p.lnumcol,
-    p.sep,
+    s.l_right,
+    --
+    s.sep,
+    --
+    p.pad,
     p.diagError,
     p.diagWarn,
-    p.sep,
     p.diagInfo,
-    p.sep,
     p.diagHint,
     p.pad,
-    p.lsp,
-    p.pad,
+    --
+    s.sep,
+    --
     p.gitadd,
-    p.sep,
     p.gitchange,
-    p.sep,
     p.gitdelete,
-    p.sep,
+    --
+    s.r_left,
+    p.lsp,
+    s.r_right,
+    s.sep,
+    --
+    s.r_left,
     p.branch,
-    p.sep,
+    s.r_right,
+    --
+    s.sep,
+    --
+    s.r_left,
     p.encoding,
-    p.sep,
+    s.r_right,
   }
 end
 
