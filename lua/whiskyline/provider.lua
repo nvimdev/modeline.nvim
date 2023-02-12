@@ -220,7 +220,8 @@ function pd.branch()
     event = { 'CursorHold', 'GitSignsUpdate' },
   }
   if not pd.initialized then
-    result.attr = stl_attr('Number')
+    result.attr = stl_attr('@parameter')
+    result.attr.bold = true
   end
   return result
 end
