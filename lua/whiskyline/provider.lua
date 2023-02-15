@@ -3,40 +3,34 @@ local pd = {}
 
 pd.initialized = false
 
-local function stl_bg()
-  -- local ok, stl = pcall(api.nvim_get_hl_by_name, '@parameter', true)
-  -- return ok and stl.foreground or 'NONE'
-  return '#363646'
+function pd.stl_bg()
+  return '#2a2a47'
 end
 
 local function stl_attr(group, trans)
   local color = api.nvim_get_hl_by_name(group, true)
   trans = trans or false
   return {
-    bg = trans and 'NONE' or stl_bg(),
+    bg = trans and 'NONE' or pd.stl_bg(),
     fg = color.foreground,
   }
 end
 
 local function alias_mode()
   return {
-    n = 'NOR',
-    i = 'INS',
-    niI = 'CTO',
-    R = 'REP',
-    -- c = 'C-LINE',
-    c = 'CLI',
-    v = 'VIS',
-    -- V = 'V-LINE',
-    V = 'VLI',
-    [''] = 'VBL',
-    s = 'SEL',
-    -- S = 'S-LINE',
-    S = 'SLI',
-    [''] = 'SBL',
-    t = 'TER',
-    -- nt = 'NORM-L',
-    nt = 'NOL',
+    n = 'NORMAL',
+    i = 'INSERT',
+    niI = 'CTRL-O',
+    R = 'REPLAC',
+    c = 'C-LINE',
+    v = 'VISUAL',
+    V = 'V-LINE',
+    [''] = 'VBLOCK',
+    s = 'SELEKT',
+    S = 'S-LINE',
+    [''] = 'SBLOCK',
+    t = 'TERMNL',
+    nt = 'NORM-L',
     ntT = 'C-\\C-O',
   }
 end
@@ -85,7 +79,7 @@ function pd.fileicon()
     name = 'fileicon',
     event = 'BufEnter',
     attr = {
-      bg = stl_bg(),
+      bg = pd.stl_bg(),
       fg = color,
     },
   }
@@ -141,7 +135,7 @@ function pd.lsp()
   }
 
   if not pd.initialized then
-    result.attr = stl_attr('Function')
+    result.attr = stl_attr('@keyword')
   end
   return result
 end
@@ -152,7 +146,7 @@ local function gitsigns_data(type)
   end
 
   local val = vim.b.gitsigns_status_dict[type]
-  val = (val == 0 or not val) and '' or tostring(val)
+  val = (val == 0 or not val) and '' or tostring(val) .. (type == 'head' and '' or ' ')
   return val
 end
 
@@ -170,24 +164,25 @@ function pd.gitadd()
   local result = {
     stl = #res > 0 and git_icons('added') .. res or '',
     name = 'gitadd',
-    event = { 'CursorHold', 'GitSignsUpdate' },
+    event = 'GitSignsUpdateDone',
   }
   if not pd.initialized then
-    result.attr = stl_attr('diffAdded', true)
+    result.attr = stl_attr('diffAdded')
   end
   return result
 end
 
 function pd.gitchange()
   local res = gitsigns_data('changed')
+  -- print(res, vim.inspect(vim.b.gitsigns_status_dict))
   local result = {
     stl = #res > 0 and git_icons('changed') .. res or '',
     name = 'gitchange',
-    event = { 'CursorHold', 'GitSignsUpdate' },
+    event = 'GitSignsUpdateDone',
   }
 
   if not pd.initialized then
-    result.attr = stl_attr('diffChanged', true)
+    result.attr = stl_attr('diffChanged')
   end
   return result
 end
@@ -197,11 +192,11 @@ function pd.gitdelete()
   local result = {
     stl = #res > 0 and git_icons('deleted') .. res or '',
     name = 'gitdelete',
-    event = { 'CursorHold', 'GitSignsUpdate' },
+    event = 'GitSignsUpdateDone',
   }
 
   if not pd.initialized then
-    result.attr = stl_attr('diffRemoved', true)
+    result.attr = stl_attr('diffRemoved')
   end
   return result
 end
@@ -212,7 +207,7 @@ function pd.branch()
   local result = {
     stl = #res > 0 and icon .. res or 'UNKOWN',
     name = 'gitbranch',
-    event = { 'CursorHold', 'GitSignsUpdate' },
+    event = 'GitSignsUpdateDone',
   }
   if not pd.initialized then
     result.attr = stl_attr('@parameter')

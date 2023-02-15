@@ -1,5 +1,5 @@
+local pd = require('whiskyline.provider')
 local sp = {}
-local fg = '#363646'
 
 function sp.sep()
   return {
@@ -18,7 +18,7 @@ function sp.l_left()
     name = 'sepleft',
     attr = {
       background = 'NONE',
-      foreground = fg,
+      foreground = pd.stl_bg(),
     },
   }
 end
@@ -29,7 +29,7 @@ function sp.l_right()
     name = 'sepleft',
     attr = {
       background = 'NONE',
-      foreground = fg,
+      foreground = pd.stl_bg(),
     },
   }
 end
@@ -40,7 +40,7 @@ function sp.r_left()
     name = 'sepleft',
     attr = {
       background = 'NONE',
-      foreground = fg,
+      foreground = pd.stl_bg(),
     },
   }
 end
@@ -51,7 +51,7 @@ function sp.r_right()
     name = 'sepleft',
     attr = {
       background = 'NONE',
-      foreground = fg,
+      foreground = pd.stl_bg(),
     },
   }
 end
