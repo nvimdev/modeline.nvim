@@ -1,9 +1,9 @@
 # whiskyline.nvim
 
 - async using coroutine
-- blazing fast with cache
+- blazing fast than any statusline plugin
 - Lsp progress message
-- mini
+- minimalist
 
 my perosnal statusline not support configuration.
 
