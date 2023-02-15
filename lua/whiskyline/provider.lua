@@ -129,13 +129,14 @@ function pd.lsp()
   end
 
   local result = {
-    stl = '%.38{"' .. table.concat(res, '') .. '"}',
+    stl = '%.20{"' .. table.concat(res, '') .. '"}',
     name = 'Lsp',
     event = { 'LspProgressUpdate', 'BufEnter' },
   }
 
   if not pd.initialized then
-    result.attr = stl_attr('@keyword')
+    result.attr = stl_attr('Function')
+    result.attr.bold = true
   end
   return result
 end
