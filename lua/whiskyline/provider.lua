@@ -163,7 +163,7 @@ function pd.gitadd()
   local result = {
     stl = #res > 0 and git_icons('added') .. res or '',
     name = 'gitadd',
-    event = 'GitSignsUpdateDone',
+    event = 'GitSignsUpdate',
   }
   if not pd.initialized then
     result.attr = stl_attr('diffAdded')
@@ -177,7 +177,7 @@ function pd.gitchange()
   local result = {
     stl = #res > 0 and git_icons('changed') .. res or '',
     name = 'gitchange',
-    event = 'GitSignsUpdateDone',
+    event = 'GitSignsUpdate',
   }
 
   if not pd.initialized then
@@ -191,7 +191,7 @@ function pd.gitdelete()
   local result = {
     stl = #res > 0 and git_icons('deleted') .. res or '',
     name = 'gitdelete',
-    event = 'GitSignsUpdateDone',
+    event = 'GitSignsUpdate',
   }
 
   if not pd.initialized then
@@ -206,7 +206,7 @@ function pd.branch()
   local result = {
     stl = #res > 0 and icon .. res or 'UNKOWN',
     name = 'gitbranch',
-    event = 'GitSignsUpdateDone',
+    event = 'GitSignsUpdate',
   }
   if not pd.initialized then
     result.attr = stl_attr('@parameter')

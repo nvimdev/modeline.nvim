@@ -110,7 +110,7 @@ function whk.setup()
   whk.elements = default()
 
   api.nvim_create_autocmd({ 'User' }, {
-    pattern = { 'LspProgressUpdate', 'GitSignsUpdateDone' },
+    pattern = { 'LspProgressUpdate', 'GitSignsUpdate' },
     callback = function(opt)
       if opt.event == 'User' then
         opt.event = opt.match
