@@ -108,19 +108,17 @@ function pd.fileinfo()
   return result
 end
 
+local index = 1
 function pd.lsp()
   local new_messages = vim.lsp.util.get_progress_messages()
   local res = {}
+  local spinner = { '🌖', '🌗', '🌘', '🌑', '🌒', '🌓', '🌔' }
 
-  for i, item in pairs(new_messages) do
-    if i == #new_messages then
-      item.title = item.title
-        .. ' '
-        .. (item.message and item.message .. ' ' or '')
-        .. (item.percentage and item.percentage .. '%' or '')
-      table.insert(res, item.title)
-    end
+  if not vim.tbl_isempty(new_messages) then
+    table.insert(res, spinner[index] .. ' Waiting')
+    index = index + 1 > #spinner and 1 or index + 1
   end
+
   if #res == 0 then
     local client = vim.lsp.get_active_clients({ bufnr = 0 })
     if #client ~= 0 then
