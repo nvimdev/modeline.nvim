@@ -62,19 +62,20 @@ local function default()
   }
 end
 
-local function whk_init()
+local function whk_init(event)
   local pieces = {}
-  if not whk.cache then
-    whk.cache = {}
-  end
+  whk.cache = {}
   for i, e in pairs(whk.elements) do
     local res = e()
-    table.insert(pieces, stl_format(res.name, res.stl))
+    if res.event and vim.tbl_contains(res.event, event) then
+      local val = type(res.stl) == 'function' and res.stl() or res.stl
+      table.insert(pieces, stl_format(res.name, val))
+    end
     if res.attr then
       stl_hl(res.name, res.attr)
     end
     whk.cache[i] = {
-      event = type(res.event) == 'string' and { res.event } or res.event,
+      event = res.event,
       name = res.name,
       stl = res.stl,
     }
@@ -86,12 +87,8 @@ end
 local stl_render = co.create(function()
   local event
   while true do
-    if not whk.cache then
-      co.yield(whk_init())
-    end
-
     local data = {}
-    for i, item in pairs(whk.cache) do
+    for i, item in pairs(whk.cache or {}) do
       if item.event and vim.tbl_contains(item.event, event) then
         local comp = whk.elements[i]
         local res = comp()
@@ -100,9 +97,13 @@ local stl_render = co.create(function()
           stl_hl(item.name, res.attr)
         end
       end
-      table.insert(data, stl_format(item.name, item.stl))
+      local val = type(item.stl) == 'function' and item.stl() or item.stl
+      table.insert(data, stl_format(item.name, val))
     end
     event = co.yield(table.concat(data, ''))
+    if not whk.cache then
+      co.yield(whk_init(event))
+    end
   end
 end)
 

@@ -38,10 +38,11 @@ end
 function pd.mode()
   local mode = api.nvim_get_mode().mode
   local alias = alias_mode()
+
   local result = {
     stl = alias[mode] or alias[string.sub(mode, 1, 1)] or 'UNK',
     name = 'mode',
-    event = 'ModeChanged',
+    event = { 'ModeChanged' },
   }
 
   if not pd.initialized then
@@ -73,11 +74,14 @@ function pd.fileicon()
   if not resolve then
     init_devicon()
   end
+
   local icon, color = resolve.get_icon_color_by_filetype(vim.bo.filetype, { default = true })
   return {
-    stl = icon .. ' ',
+    stl = function()
+      return icon .. ' '
+    end,
     name = 'fileicon',
-    event = 'BufEnter',
+    event = { 'BufEnter' },
     attr = {
       bg = pd.stl_bg(),
       fg = color,
@@ -110,26 +114,29 @@ end
 
 local index = 1
 function pd.lsp()
-  local new_messages = vim.lsp.util.get_progress_messages()
-  local res = {}
-  local spinner = { '🌖', '🌗', '🌘', '🌑', '🌒', '🌓', '🌔' }
+  local function lsp_stl()
+    local new_messages = vim.lsp.util.get_progress_messages()
+    local res = {}
+    local spinner = { '🌖', '🌗', '🌘', '🌑', '🌒', '🌓', '🌔' }
 
-  if not vim.tbl_isempty(new_messages) then
-    table.insert(res, spinner[index] .. ' Waiting')
-    index = index + 1 > #spinner and 1 or index + 1
-  end
-
-  if #res == 0 then
-    local client = vim.lsp.get_active_clients({ bufnr = 0 })
-    if #client ~= 0 then
-      table.insert(res, client[1].name)
+    if not vim.tbl_isempty(new_messages) then
+      table.insert(res, spinner[index] .. ' Waiting')
+      index = index + 1 > #spinner and 1 or index + 1
     end
+
+    if #res == 0 then
+      local client = vim.lsp.get_active_clients({ bufnr = 0 })
+      if #client ~= 0 then
+        table.insert(res, client[1].name)
+      end
+    end
+    return '%.20{"' .. table.concat(res, '') .. '"}'
   end
 
   local result = {
-    stl = '%.20{"' .. table.concat(res, '') .. '"}',
+    stl = lsp_stl,
     name = 'Lsp',
-    event = { 'LspProgressUpdate', 'BufEnter' },
+    event = { 'LspProgressUpdate', 'LspAttach' },
   }
 
   if not pd.initialized then
@@ -159,11 +166,13 @@ local function git_icons(type)
 end
 
 function pd.gitadd()
-  local res = gitsigns_data('added')
   local result = {
-    stl = #res > 0 and git_icons('added') .. res or '',
+    stl = function()
+      local res = gitsigns_data('added')
+      return #res > 0 and git_icons('added') .. res or ''
+    end,
     name = 'gitadd',
-    event = 'GitSignsUpdate',
+    event = { 'GitSignsUpdate' },
   }
   if not pd.initialized then
     result.attr = stl_attr('diffAdded')
@@ -172,11 +181,13 @@ function pd.gitadd()
 end
 
 function pd.gitchange()
-  local res = gitsigns_data('changed')
   local result = {
-    stl = #res > 0 and git_icons('changed') .. res or '',
+    stl = function()
+      local res = gitsigns_data('changed')
+      return #res > 0 and git_icons('changed') .. res or ''
+    end,
     name = 'gitchange',
-    event = 'GitSignsUpdate',
+    event = { 'GitSignsUpdate' },
   }
 
   if not pd.initialized then
@@ -186,11 +197,13 @@ function pd.gitchange()
 end
 
 function pd.gitdelete()
-  local res = gitsigns_data('deleted')
   local result = {
-    stl = #res > 0 and git_icons('deleted') .. res or '',
+    stl = function()
+      local res = gitsigns_data('deleted')
+      return #res > 0 and git_icons('deleted') .. res or ''
+    end,
     name = 'gitdelete',
-    event = 'GitSignsUpdate',
+    event = { 'GitSignsUpdate' },
   }
 
   if not pd.initialized then
@@ -200,12 +213,14 @@ function pd.gitdelete()
 end
 
 function pd.branch()
-  local icon = ' '
-  local res = gitsigns_data('head')
   local result = {
-    stl = #res > 0 and icon .. res or 'UNKOWN',
+    stl = function()
+      local icon = ' '
+      local res = gitsigns_data('head')
+      return #res > 0 and icon .. res or 'UNKOWN'
+    end,
     name = 'gitbranch',
-    event = 'GitSignsUpdate',
+    event = { 'GitSignsUpdate' },
   }
   if not pd.initialized then
     result.attr = stl_attr('@parameter')
@@ -229,7 +244,7 @@ function pd.lnumcol()
   local result = {
     stl = '%-4.(%l:%c%) %P',
     name = 'linecol',
-    event = 'CursorHold',
+    event = { 'CursorHold' },
   }
 
   if not pd.initialized then
@@ -257,7 +272,7 @@ function pd.diagError()
   local result = {
     stl = diagnostic_info(1),
     name = 'diagError',
-    event = { 'DiagnosticChanged', 'BufEnter' },
+    event = { 'DiagnosticChanged' },
   }
   if not pd.initialized then
     result.attr = stl_attr('DiagnosticError', true)
@@ -269,7 +284,7 @@ function pd.diagWarn()
   local result = {
     stl = diagnostic_info(2),
     name = 'diagWarn',
-    event = { 'DiagnosticChanged', 'BufEnter' },
+    event = { 'DiagnosticChanged' },
   }
   if not pd.initialized then
     result.attr = stl_attr('DiagnosticWarn', true)
@@ -281,7 +296,7 @@ function pd.diagInfo()
   local result = {
     stl = diagnostic_info(3),
     name = 'diaginfo',
-    event = { 'DiagnosticChanged', 'BufEnter' },
+    event = { 'DiagnosticChanged' },
   }
   if not pd.initialized then
     result.attr = stl_attr('DiagnosticInfo', true)
@@ -293,7 +308,7 @@ function pd.diagHint()
   local result = {
     stl = diagnostic_info(4),
     name = 'diaghint',
-    event = { 'DiagnosticChanged', 'BufEnter' },
+    event = { 'DiagnosticChanged' },
   }
   if not pd.initialized then
     result.attr = stl_attr('DiagnosticHint', true)
@@ -305,7 +320,7 @@ function pd.encoding()
   local result = {
     stl = '%{&fileencoding?&fileencoding:&encoding}',
     name = 'filencode',
-    event = 'BufEnter',
+    event = { 'BufEnter' },
   }
   if not pd.initialized then
     result.attr = stl_attr('Type')
