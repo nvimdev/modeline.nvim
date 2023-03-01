@@ -36,13 +36,14 @@ local function alias_mode()
 end
 
 function pd.mode()
-  local mode = api.nvim_get_mode().mode
   local alias = alias_mode()
-
   local result = {
-    stl = alias[mode] or alias[string.sub(mode, 1, 1)] or 'UNK',
+    stl = function()
+      local mode = api.nvim_get_mode().mode
+      return alias[mode] or alias[string.sub(mode, 1, 1)] or 'UNK'
+    end,
     name = 'mode',
-    event = { 'ModeChanged' },
+    event = { 'ModeChanged', 'BufRead' },
   }
 
   if not pd.initialized then
@@ -90,17 +91,19 @@ function pd.fileicon()
 end
 
 function pd.fileinfo()
-  local fname = api.nvim_buf_get_name(0)
-  local sep = path_sep()
-  local parts = vim.split(fname, sep, { trimempty = true })
-  local index = #parts - 1 <= 0 and 1 or #parts - 1
-  fname = table.concat({ unpack(parts, index) }, sep)
-  if #fname == 0 then
-    fname = 'UNKNOWN'
+  local function stl_file()
+    local fname = api.nvim_buf_get_name(0)
+    local sep = path_sep()
+    local parts = vim.split(fname, sep, { trimempty = true })
+    local index = #parts - 1 <= 0 and 1 or #parts - 1
+    fname = table.concat({ unpack(parts, index) }, sep)
+    if #fname == 0 then
+      fname = 'UNKNOWN'
+    end
+    return fname .. '%m'
   end
-
   local result = {
-    stl = fname .. '%m',
+    stl = stl_file,
     name = 'fileinfo',
     event = { 'BufEnter' },
   }
@@ -270,7 +273,9 @@ end
 
 function pd.diagError()
   local result = {
-    stl = diagnostic_info(1),
+    stl = function()
+      return diagnostic_info(1)
+    end,
     name = 'diagError',
     event = { 'DiagnosticChanged' },
   }
@@ -282,7 +287,9 @@ end
 
 function pd.diagWarn()
   local result = {
-    stl = diagnostic_info(2),
+    stl = function()
+      return diagnostic_info(2)
+    end,
     name = 'diagWarn',
     event = { 'DiagnosticChanged' },
   }
@@ -294,7 +301,9 @@ end
 
 function pd.diagInfo()
   local result = {
-    stl = diagnostic_info(3),
+    stl = function()
+      return diagnostic_info(3)
+    end,
     name = 'diaginfo',
     event = { 'DiagnosticChanged' },
   }
@@ -306,7 +315,9 @@ end
 
 function pd.diagHint()
   local result = {
-    stl = diagnostic_info(4),
+    stl = function()
+      return diagnostic_info(4)
+    end,
     name = 'diaghint',
     event = { 'DiagnosticChanged' },
   }

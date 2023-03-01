@@ -62,14 +62,19 @@ local function default()
   }
 end
 
-local function whk_init(event)
-  local pieces = {}
+local function whk_init(event, pieces)
   whk.cache = {}
   for i, e in pairs(whk.elements) do
     local res = e()
-    if res.event and vim.tbl_contains(res.event, event) then
-      local val = type(res.stl) == 'function' and res.stl() or res.stl
-      table.insert(pieces, stl_format(res.name, val))
+    if type(res.stl) == 'string' then
+      pieces[#pieces + 1] = stl_format(res.name, res.stl)
+    else
+      if res.event and vim.tbl_contains(res.event, event) then
+        local val = type(res.stl) == 'function' and res.stl() or res.stl
+        pieces[#pieces + 1] = stl_format(res.name, val)
+      else
+        pieces[#pieces + 1] = stl_format(res.name, '')
+      end
     end
     if res.attr then
       stl_hl(res.name, res.attr)
@@ -84,26 +89,24 @@ local function whk_init(event)
   return table.concat(pieces, '')
 end
 
-local stl_render = co.create(function()
-  local event
+local stl_render = co.create(function(event)
+  local pieces = {}
   while true do
-    local data = {}
-    for i, item in pairs(whk.cache or {}) do
-      if item.event and vim.tbl_contains(item.event, event) then
+    if not whk.cache then
+      co.yield(whk_init(event, pieces))
+    end
+
+    for i, item in pairs(whk.cache) do
+      if item.event and vim.tbl_contains(item.event, event) and type(item.stl) == 'function' then
         local comp = whk.elements[i]
         local res = comp()
-        item.stl = res.stl
         if res.attr then
           stl_hl(item.name, res.attr)
         end
+        pieces[i] = stl_format(item.name, res.stl())
       end
-      local val = type(item.stl) == 'function' and item.stl() or item.stl
-      table.insert(data, stl_format(item.name, val))
     end
-    event = co.yield(table.concat(data, ''))
-    if not whk.cache then
-      co.yield(whk_init(event))
-    end
+    event = co.yield(table.concat(pieces, ''))
   end
 end)
 
@@ -131,7 +134,7 @@ function whk.setup()
     end,
   })
 
-  local events = { 'DiagnosticChanged', 'BufEnter', 'BufRead', 'BufWritePost' }
+  local events = { 'DiagnosticChanged', 'ModeChanged', 'BufEnter', 'BufRead', 'BufWritePost' }
   api.nvim_create_autocmd(events, {
     callback = function(opt)
       local status, stl = co.resume(stl_render, opt.event)
