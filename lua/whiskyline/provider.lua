@@ -173,7 +173,6 @@ end
 
 function pd.gitchange()
   local res = gitsigns_data('changed')
-  -- print(res, vim.inspect(vim.b.gitsigns_status_dict))
   local result = {
     stl = #res > 0 and git_icons('changed') .. res or '',
     name = 'gitchange',
