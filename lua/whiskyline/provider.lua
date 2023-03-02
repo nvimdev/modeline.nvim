@@ -43,7 +43,7 @@ function pd.mode()
       return alias[mode] or alias[string.sub(mode, 1, 1)] or 'UNK'
     end,
     name = 'mode',
-    event = { 'ModeChanged', 'BufRead' },
+    event = { 'ModeChanged', 'BufReadPost' },
   }
 
   if not pd.initialized then
@@ -82,7 +82,7 @@ function pd.fileicon()
       return icon .. ' '
     end,
     name = 'fileicon',
-    event = { 'BufEnter' },
+    event = { 'BufReadPost' },
     attr = {
       bg = pd.stl_bg(),
       fg = color,
@@ -105,7 +105,7 @@ function pd.fileinfo()
   local result = {
     stl = stl_file,
     name = 'fileinfo',
-    event = { 'BufEnter' },
+    event = { 'BufReadPost' },
   }
 
   if not pd.initialized then
