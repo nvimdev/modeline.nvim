@@ -63,6 +63,7 @@ local function default()
 end
 
 local function whk_init(event, pieces)
+  print(event)
   whk.cache = {}
   for i, e in pairs(whk.elements) do
     local res = e()
@@ -134,7 +135,7 @@ function whk.setup()
     end,
   })
 
-  local events = { 'DiagnosticChanged', 'ModeChanged', 'BufEnter', 'BufWritePost', 'BufReadPost' }
+  local events = { 'DiagnosticChanged', 'ModeChanged', 'BufEnter', 'BufWritePost' }
   api.nvim_create_autocmd(events, {
     callback = function(opt)
       local status, stl = co.resume(stl_render, opt.event)
