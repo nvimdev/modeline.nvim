@@ -291,7 +291,7 @@ function pd.diagWarn()
       return diagnostic_info(2)
     end,
     name = 'diagWarn',
-    event = { 'DiagnosticChanged' },
+    event = { 'DiagnosticChanged', 'BufEnter' },
   }
   if not pd.initialized then
     result.attr = stl_attr('DiagnosticWarn', true)
@@ -305,7 +305,7 @@ function pd.diagInfo()
       return diagnostic_info(3)
     end,
     name = 'diaginfo',
-    event = { 'DiagnosticChanged' },
+    event = { 'DiagnosticChanged', 'BufEnter' },
   }
   if not pd.initialized then
     result.attr = stl_attr('DiagnosticInfo', true)
@@ -319,7 +319,7 @@ function pd.diagHint()
       return diagnostic_info(4)
     end,
     name = 'diaghint',
-    event = { 'DiagnosticChanged' },
+    event = { 'DiagnosticChanged', 'BufEnter' },
   }
   if not pd.initialized then
     result.attr = stl_attr('DiagnosticHint', true)
