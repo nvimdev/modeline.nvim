@@ -63,7 +63,6 @@ local function default()
 end
 
 local function whk_init(event, pieces)
-  print(event)
   whk.cache = {}
   for i, e in pairs(whk.elements) do
     local res = e()
