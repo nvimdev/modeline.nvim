@@ -127,7 +127,7 @@ function whk.setup()
     end,
   })
 
-  local events = { 'DiagnosticChanged', 'ModeChanged', 'BufEnter', 'BufWritePost' }
+  local events = { 'DiagnosticChanged', 'ModeChanged', 'BufEnter', 'BufWritePost', 'LspAttach' }
   api.nvim_create_autocmd(events, {
     callback = function(opt)
       co.resume(stl_render, opt.event)
