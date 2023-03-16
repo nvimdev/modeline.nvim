@@ -93,20 +93,24 @@ local stl_render = co.create(function(event)
   local pieces = {}
   while true do
     if not whk.cache then
-      co.yield(whk_init(event, pieces))
-    end
-
-    for i, item in pairs(whk.cache) do
-      if item.event and vim.tbl_contains(item.event, event) and type(item.stl) == 'function' then
-        local comp = whk.elements[i]
-        local res = comp()
-        if res.attr then
-          stl_hl(item.name, res.attr)
+      whk_init(event, pieces)
+    else
+      for i, item in pairs(whk.cache) do
+        if item.event and vim.tbl_contains(item.event, event) and type(item.stl) == 'function' then
+          local comp = whk.elements[i]
+          local res = comp()
+          if res.attr then
+            stl_hl(item.name, res.attr)
+          end
+          pieces[i] = stl_format(item.name, res.stl())
         end
-        pieces[i] = stl_format(item.name, res.stl())
       end
     end
-    event = co.yield(table.concat(pieces, ''))
+
+    vim.schedule(function()
+      vim.opt.stl = table.concat(pieces)
+    end)
+    event = co.yield()
   end
 end)
 
@@ -119,28 +123,14 @@ function whk.setup()
       if opt.event == 'User' then
         opt.event = opt.match
       end
-
-      local status, stl = co.resume(stl_render, opt.event)
-      if status then
-        vim.opt.stl = stl
-      end
-      -- run once again make sure it update the lsp name
-      if opt.event == 'LspProgressUpdate' then
-        status, stl = co.resume(stl_render, opt.event)
-        if status then
-          vim.opt.stl = stl
-        end
-      end
+      co.resume(stl_render, opt.event)
     end,
   })
 
   local events = { 'DiagnosticChanged', 'ModeChanged', 'BufEnter', 'BufWritePost' }
   api.nvim_create_autocmd(events, {
     callback = function(opt)
-      local status, stl = co.resume(stl_render, opt.event)
-      if status then
-        vim.opt.stl = stl
-      end
+      co.resume(stl_render, opt.event)
     end,
   })
 end

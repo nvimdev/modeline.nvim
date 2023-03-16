@@ -115,10 +115,44 @@ function pd.fileinfo()
   return result
 end
 
+local function get_progress_messages()
+  local new_messages = {}
+  local progress_remove = {}
+
+  for _, client in ipairs(vim.lsp.get_active_clients()) do
+    local messages = client.messages
+    local data = messages
+    for token, ctx in pairs(data.progress) do
+      local new_report = {
+        name = data.name,
+        title = ctx.title or 'empty title',
+        message = ctx.message,
+        percentage = ctx.percentage,
+        done = ctx.done,
+        progress = true,
+      }
+      table.insert(new_messages, new_report)
+
+      if ctx.done then
+        table.insert(progress_remove, { client = client, token = token })
+      end
+    end
+  end
+
+  if not vim.tbl_isempty(progress_remove) then
+    for _, item in ipairs(progress_remove) do
+      item.client.messages.progress[item.token] = nil
+    end
+    return {}
+  end
+
+  return new_messages
+end
+
 local index = 1
 function pd.lsp()
   local function lsp_stl()
-    local new_messages = vim.lsp.util.get_progress_messages()
+    local new_messages = get_progress_messages()
     local res = {}
     local spinner = { '🌖', '🌗', '🌘', '🌑', '🌒', '🌓', '🌔' }
 
