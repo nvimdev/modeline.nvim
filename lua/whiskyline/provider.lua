@@ -311,7 +311,7 @@ function pd.diagError()
       return diagnostic_info(1)
     end,
     name = 'diagError',
-    event = { 'DiagnosticChanged' },
+    event = { 'DiagnosticChanged', 'BufEnter' },
   }
   if not pd.initialized then
     result.attr = stl_attr('DiagnosticError', true)
