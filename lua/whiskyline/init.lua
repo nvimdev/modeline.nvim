@@ -114,7 +114,9 @@ local stl_render = co.create(function(event)
   end
 end)
 
-function whk.setup()
+function whk.setup(param)
+  param = param or { bg = '#01394a' }
+  whk.bg = param.bg
   whk.elements = default()
 
   api.nvim_create_autocmd({ 'User' }, {

@@ -4,7 +4,7 @@ local pd = {}
 pd.initialized = false
 
 function pd.stl_bg()
-  return '#2a2a47'
+  return require('whiskyline').bg
 end
 
 local function stl_attr(group, trans)
