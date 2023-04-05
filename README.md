@@ -6,7 +6,7 @@
 - Lsp progress message
 - minimalist
 
-my perosnal statusline not support configuration. gitsigns need use my fork branch patch_2.
+my perosnal statusline not support configuration.
 
 Currently I'm losing enthusiasm for making plugins and maintain plugins. Maybe the projects I publish
 in the future will no longer support any configuration.

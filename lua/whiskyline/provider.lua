@@ -260,7 +260,7 @@ function pd.branch()
     event = { 'GitSignsUpdate' },
   }
   if not pd.initialized then
-    result.attr = stl_attr('@parameter')
+    result.attr = stl_attr('Include')
     result.attr.bold = true
   end
   return result
