@@ -258,7 +258,7 @@ end
 function pd.gitdelete()
   local result = {
     stl = function()
-      local res = gitsigns_data('deleted')
+      local res = gitsigns_data('removed')
       return #res > 0 and git_icons('deleted') .. res or ''
     end,
     name = 'gitdelete',
