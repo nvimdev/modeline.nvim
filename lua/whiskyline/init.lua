@@ -66,19 +66,20 @@ local function whk_init(event, pieces)
   whk.cache = {}
   for i, e in ipairs(whk.elements) do
     local res = e()
-    if type(res.stl) == 'string' then
+
+    if res.event and vim.tbl_contains(res.event, event) then
+      local val = type(res.stl) == 'function' and res.stl() or res.stl
+      pieces[#pieces + 1] = stl_format(res.name, val)
+    elseif type(res.stl) == 'string' then
       pieces[#pieces + 1] = stl_format(res.name, res.stl)
     else
-      if res.event and vim.tbl_contains(res.event, event) then
-        local val = type(res.stl) == 'function' and res.stl() or res.stl
-        pieces[#pieces + 1] = stl_format(res.name, val)
-      else
-        pieces[#pieces + 1] = stl_format(res.name, '')
-      end
+      pieces[#pieces + 1] = stl_format(res.name, '')
     end
+
     if res.attr then
       stl_hl(res.name, res.attr)
     end
+
     whk.cache[i] = {
       event = res.event,
       name = res.name,
@@ -111,29 +112,22 @@ local stl_render = co.create(function(event)
   end
 end)
 
-function whk.setup(param)
-  param = param or { bg = '#01394a' }
-  whk.bg = param.bg
+function whk.setup(opt)
+  opt = opt or { bg = '#01394a' }
+  whk.bg = opt.bg
   whk.elements = default()
 
   api.nvim_create_autocmd({ 'User' }, {
     pattern = { 'LspProgressUpdate', 'GitSignsUpdate' },
-    callback = function(opt)
-      if opt.event == 'User' then
-        opt.event = opt.match
-      end
-      vim.schedule(function()
-        co.resume(stl_render, opt.event)
-      end)
+    callback = function(arg)
+      co.resume(stl_render, arg.match)
     end,
   })
 
   local events = { 'DiagnosticChanged', 'ModeChanged', 'BufEnter', 'BufWritePost', 'LspAttach' }
   api.nvim_create_autocmd(events, {
-    callback = function(opt)
-      vim.schedule(function()
-        co.resume(stl_render, opt.event)
-      end)
+    callback = function(arg)
+      co.resume(stl_render, arg.event)
     end,
   })
 end

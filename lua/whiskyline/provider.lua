@@ -171,25 +171,30 @@ local function get_progress_messages()
   return new_messages
 end
 
-local index = 1
 function pd.lsp()
   local function lsp_stl()
     local new_messages = get_progress_messages()
-    local res = {}
-    local spinner = { '🌖', '🌗', '🌘', '🌑', '🌒', '🌓', '🌔' }
+    local msg = ''
 
-    if not vim.tbl_isempty(new_messages) then
-      table.insert(res, spinner[index] .. ' Waiting')
-      index = index + 1 > #spinner and 1 or index + 1
-    end
-
-    if #res == 0 then
-      local client = vim.lsp.get_active_clients({ bufnr = 0 })
-      if #client ~= 0 then
-        table.insert(res, client[1].name)
+    for i, item in ipairs(new_messages) do
+      if i == #new_messages then
+        msg = item.title
+        if item.message then
+          msg = msg .. ' ' .. item.message
+        end
+        if item.percentage then
+          msg = msg .. ' ' .. item.percentage .. '%'
+        end
       end
     end
-    return '%.20{"' .. table.concat(res, '') .. '"}'
+
+    if #msg == 0 then
+      local client = vim.lsp.get_active_clients({ bufnr = 0 })
+      if #client ~= 0 then
+        msg = client[1].name
+      end
+    end
+    return '%.40{"' .. msg .. '"}'
   end
 
   local result = {
