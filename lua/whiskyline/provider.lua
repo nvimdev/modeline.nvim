@@ -172,7 +172,7 @@ local function get_progress_messages()
 end
 
 function pd.lsp()
-  local function lsp_stl()
+  local function lsp_stl(event)
     local new_messages = get_progress_messages()
     local msg = ''
 
@@ -188,7 +188,7 @@ function pd.lsp()
       end
     end
 
-    if #msg == 0 then
+    if #msg == 0 and event ~= 'LspDetach' then
       local client = vim.lsp.get_active_clients({ bufnr = 0 })
       if #client ~= 0 then
         msg = client[1].name
@@ -200,7 +200,7 @@ function pd.lsp()
   local result = {
     stl = lsp_stl,
     name = 'Lsp',
-    event = { 'LspProgressUpdate', 'LspAttach' },
+    event = { 'LspProgressUpdate', 'LspAttach', 'LspDetach' },
   }
 
   if not pd.initialized then
