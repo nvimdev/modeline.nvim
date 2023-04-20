@@ -131,7 +131,7 @@ function whk.setup(opt)
   api.nvim_create_autocmd(events, {
     callback = function(arg)
       vim.schedule(function()
-        co.resume(stl_render, arg.match)
+        co.resume(stl_render, arg.event)
       end)
     end,
   })
