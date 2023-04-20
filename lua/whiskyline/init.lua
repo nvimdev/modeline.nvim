@@ -120,7 +120,9 @@ function whk.setup(opt)
   api.nvim_create_autocmd({ 'User' }, {
     pattern = { 'LspProgressUpdate', 'GitSignsUpdate' },
     callback = function(arg)
-      co.resume(stl_render, arg.match)
+      vim.schedule(function()
+        co.resume(stl_render, arg.match)
+      end)
     end,
   })
 
@@ -128,7 +130,9 @@ function whk.setup(opt)
     { 'DiagnosticChanged', 'ModeChanged', 'BufEnter', 'BufWritePost', 'LspAttach', 'LspDetach' }
   api.nvim_create_autocmd(events, {
     callback = function(arg)
-      co.resume(stl_render, arg.event)
+      vim.schedule(function()
+        co.resume(stl_render, arg.match)
+      end)
     end,
   })
 end
