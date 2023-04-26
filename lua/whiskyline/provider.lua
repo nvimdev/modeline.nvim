@@ -239,7 +239,7 @@ function pd.gitadd()
     event = { 'GitSignsUpdate' },
   }
   if not pd.initialized then
-    result.attr = stl_attr('diffAdded')
+    result.attr = stl_attr('DiffAdd')
   end
   return result
 end
@@ -255,7 +255,7 @@ function pd.gitchange()
   }
 
   if not pd.initialized then
-    result.attr = stl_attr('diffChanged')
+    result.attr = stl_attr('DiffChange')
   end
   return result
 end
@@ -271,7 +271,7 @@ function pd.gitdelete()
   }
 
   if not pd.initialized then
-    result.attr = stl_attr('diffRemoved')
+    result.attr = stl_attr('DiffDelete')
   end
   return result
 end
