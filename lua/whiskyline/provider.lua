@@ -323,7 +323,7 @@ local function diagnostic_info(severity)
   end
 
   local signs = {
-    ' ',
+    ' ',
     ' ',
     ' ',
     ' ',
