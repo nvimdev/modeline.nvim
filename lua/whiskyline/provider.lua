@@ -317,19 +317,22 @@ function pd.lnumcol()
   return result
 end
 
+local function get_diag_sign(type)
+  local prefix = 'DiagnosticSign'
+  for _, item in ipairs(vim.fn.sign_getdefined()) do
+    if item.name == prefix .. type then
+      return item.text
+    end
+  end
+end
+
 local function diagnostic_info(severity)
   if vim.diagnostic.is_disabled(0) then
     return ''
   end
-
-  local signs = {
-    ' ',
-    ' ',
-    ' ',
-    ' ',
-  }
+  local tbl = { 'Error', 'Warn', 'Info', 'Hint' }
   local count = #vim.diagnostic.get(0, { severity = severity })
-  return count == 0 and '' or signs[severity] .. tostring(count) .. ' '
+  return count == 0 and '' or get_diag_sign(tbl[severity]) .. tostring(count) .. ' '
 end
 
 function pd.diagError()
