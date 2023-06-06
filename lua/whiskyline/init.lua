@@ -11,7 +11,7 @@ end
 
 local function default()
   local p = require('whiskyline.provider')
-  local s = require('whiskyline.seperator')
+  local s = require('whiskyline.separator')
   return {
     --
     s.l_left,
