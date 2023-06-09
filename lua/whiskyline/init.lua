@@ -118,7 +118,7 @@ function whk.setup(opt)
   whk.elements = default()
 
   api.nvim_create_autocmd({ 'User' }, {
-    pattern = { 'LspProgressUpdate', 'GitSignsUpdate' },
+    pattern = 'GitSignsUpdate',
     callback = function(arg)
       vim.schedule(function()
         co.resume(stl_render, arg.match)
@@ -126,8 +126,15 @@ function whk.setup(opt)
     end,
   })
 
-  local events =
-    { 'DiagnosticChanged', 'ModeChanged', 'BufEnter', 'BufWritePost', 'LspAttach', 'LspDetach' }
+  local events = {
+    'LspProgress',
+    'DiagnosticChanged',
+    'ModeChanged',
+    'BufEnter',
+    'BufWritePost',
+    'LspAttach',
+    'LspDetach',
+  }
   api.nvim_create_autocmd(events, {
     callback = function(arg)
       vim.schedule(function()
