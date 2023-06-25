@@ -140,7 +140,7 @@ end
 function pd.lsp()
   local function lsp_stl(event)
     local msg = vim.lsp.status()
-    if (#msg == 0 or not msg:find('^%d')) and event ~= 'LspDetach' then
+    if #msg == 0 and event ~= 'LspDetach' then
       local client = vim.lsp.get_active_clients({ bufnr = 0 })
       if #client ~= 0 then
         msg = client[1].name
