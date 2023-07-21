@@ -12,136 +12,97 @@ end
 local function default()
   local p = require('whiskyline.provider')
   local s = require('whiskyline.separator')
-  return {
+  local comps = {
+    s.space(),
+    p.encoding(),
+    p.eol(),
+    p.modified(),
+    s.space(),
     --
-    s.l_left,
-    p.mode,
-    s.l_right,
+    p.fileicon(),
+    p.fileinfo(),
+    s.space(),
+    p.lnumcol(),
+    s.pad(),
+    p.diagError(),
+    p.diagWarn(),
+    p.diagInfo(),
+    p.diagHint(),
+    s.pad(),
     --
-    s.sep,
+    p.lsp(),
+    s.space(),
+    p.gitadd(),
+    p.gitchange(),
+    p.gitdelete(),
+    p.branch(),
+    s.space(),
+    p.mode(),
     --
-    s.l_left,
-    p.fileicon,
-    p.fileinfo,
-    s.l_right,
-    --
-    s.sep,
-    --
-    s.l_left,
-    p.lnumcol,
-    s.l_right,
-    --
-    s.sep,
-    --
-    p.pad,
-    p.diagError,
-    p.diagWarn,
-    p.diagInfo,
-    p.diagHint,
-    p.pad,
-    --
-    s.sep,
-    --
-    s.r_left,
-    p.lsp,
-    s.r_right,
-    s.sep,
-    --
-    s.r_left,
-    p.gitadd,
-    p.gitchange,
-    p.gitdelete,
-    p.branch,
-    s.r_right,
-    --
-    s.sep,
-    --
-    s.r_left,
-    p.encoding,
-    s.r_right,
   }
-end
-
-local function whk_init(event, pieces)
-  whk.cache = {}
-  for i, e in ipairs(whk.elements) do
-    local res = e()
-
-    if res.event and vim.tbl_contains(res.event, event) then
-      local val = type(res.stl) == 'function' and res.stl() or res.stl
-      pieces[#pieces + 1] = stl_format(res.name, val)
-    elseif type(res.stl) == 'string' then
-      pieces[#pieces + 1] = stl_format(res.name, res.stl)
+  local e, pieces = {}, {}
+  vim.iter(comps):map(function(item)
+    if type(item.stl) == 'string' then
+      pieces[#pieces + 1] = stl_format(item.name, item.stl)
     else
-      pieces[#pieces + 1] = stl_format(res.name, '')
+      pieces[#pieces + 1] = item.default and stl_format(item.name, item.default) or ''
+    end
+    if item.attr and item.name then
+      stl_hl(item.name, item.attr)
     end
 
-    if res.attr then
-      stl_hl(res.name, res.attr)
+    for _, event in ipairs({ unpack(item.event or {}) }) do
+      e[#e + 1] = not vim.tbl_contains(e, event) and event or nil
     end
-
-    whk.cache[i] = {
-      event = res.event,
-      name = res.name,
-      stl = res.stl,
-    }
-  end
-  require('whiskyline.provider').initialized = true
-  return table.concat(pieces, '')
+  end)
+  return comps, e, pieces
 end
 
-local stl_render = co.create(function(event)
-  local pieces = {}
-  while true do
-    if not whk.cache then
-      whk_init(event, pieces)
-    else
-      for i, item in ipairs(whk.cache) do
-        if item.event and vim.tbl_contains(item.event, event) and type(item.stl) == 'function' then
-          local comp = whk.elements[i]
-          local res = comp()
-          if res.attr then
-            stl_hl(item.name, res.attr)
-          end
-          pieces[i] = stl_format(item.name, res.stl(event))
+local function render(comps, pieces)
+  return co.create(function(args)
+    while true do
+      for i, item in ipairs(comps) do
+        if
+          item.event
+          and vim.tbl_contains(
+            item.event,
+            (args.event == 'User' and args.event .. ' ' .. args.match or args.event)
+          )
+          and type(item.stl) == 'function'
+        then
+          pieces[i] = stl_format(item.name, item.stl(args))
         end
       end
+      vim.opt.stl = table.concat(pieces)
+      args = co.yield()
     end
-    vim.opt.stl = table.concat(pieces)
-    event = co.yield()
-  end
-end)
+  end)
+end
 
-function whk.setup(opt)
-  opt = opt or { bg = '#01394a' }
-  whk.bg = opt.bg
-  whk.elements = default()
+function whk.setup()
+  vim.defer_fn(function()
+    local comps, events, pieces = default()
+    local stl_render = render(comps, pieces)
+    for _, e in ipairs(events) do
+      local tmp = e
+      local pattern
+      if e:find('User') then
+        pattern = vim.split(e, '%s')[2]
+      end
 
-  api.nvim_create_autocmd({ 'User' }, {
-    pattern = 'GitSignsUpdate',
-    callback = function(arg)
-      vim.schedule(function()
-        co.resume(stl_render, arg.match)
-      end)
-    end,
-  })
-
-  local events = {
-    'LspProgress',
-    'DiagnosticChanged',
-    'ModeChanged',
-    'BufEnter',
-    'BufWritePost',
-    'LspAttach',
-    'LspDetach',
-  }
-  api.nvim_create_autocmd(events, {
-    callback = function(arg)
-      vim.schedule(function()
-        co.resume(stl_render, arg.event)
-      end)
-    end,
-  })
+      api.nvim_create_autocmd(tmp, {
+        pattern = pattern,
+        callback = function(args)
+          vim.schedule(function()
+            local ok, res = co.resume(stl_render, args)
+            if not ok then
+              vim.notify('[Whisky] render failed ' .. res, vim.log.levels.ERROR)
+            end
+          end)
+        end,
+      })
+    end
+  end, 0)
 end
 
 return whk

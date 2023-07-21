@@ -1,17 +1,25 @@
-local api, uv = vim.api, vim.uv
+local api, uv, lsp = vim.api, vim.uv, vim.lsp
 local pd = {}
 
-pd.initialized = false
+local function get_stl_bg()
+  local res = api.nvim_get_hl_by_name('StatusLine', true)
+  if vim.tbl_count(res) == 0 then
+    vim.notify('[Whisky] colorschem missing StatusLine config')
+    return
+  end
+  return res.background
+end
 
-function pd.stl_bg()
-  return require('whiskyline').bg
+local stl_bg
+if not stl_bg then
+  stl_bg = get_stl_bg()
 end
 
 local function stl_attr(group, trans)
   local color = api.nvim_get_hl_by_name(group, true)
   trans = trans or false
   return {
-    bg = trans and 'NONE' or pd.stl_bg(),
+    bg = trans and 'NONE' or stl_bg,
     fg = color.foreground,
   }
 end
@@ -65,7 +73,8 @@ function pd.mode()
       return alias[mode] or alias[string.sub(mode, 1, 1)] or 'UNK'
     end,
     name = 'mode',
-    event = { 'ModeChanged', 'BufEnter' },
+    default = 'Normal',
+    event = { 'ModeChanged' },
   }
 
   if not pd.initialized then
@@ -80,34 +89,23 @@ local function path_sep()
   return uv.os_uname().sysname == 'Windows_NT' and '\\' or '/'
 end
 
-local resolve
-
-local function init_devicon()
-  if resolve then
-    return
-  end
-  local ok, devicon = pcall(require, 'nvim-web-devicons')
-  if not ok then
-    return
-  end
-  resolve = devicon
-end
-
 function pd.fileicon()
-  if not resolve then
-    init_devicon()
-  end
+  local ok, devicon = pcall(require, 'nvim-web-devicons')
+  local icon, color
 
-  local icon, color = resolve.get_icon_color_by_filetype(vim.bo.filetype, { default = true })
   return {
     stl = function()
-      return icon .. ' '
+      if ok then
+        icon, color = devicon.get_icon_color_by_filetype(vim.bo.filetype, { default = true })
+        api.nvim_set_hl(0, 'Whiskyfileicon', { bg = stl_bg, fg = color })
+        return icon .. ' '
+      end
+      return ''
     end,
     name = 'fileicon',
     event = { 'BufEnter' },
     attr = {
-      bg = pd.stl_bg(),
-      fg = color,
+      bg = stl_bg,
     },
   }
 end
@@ -122,29 +120,38 @@ function pd.fileinfo()
     if #fname == 0 then
       fname = 'UNKNOWN'
     end
-    return fname .. '%m'
+    return fname
   end
+
   local result = {
     stl = stl_file,
     name = 'fileinfo',
     event = { 'BufEnter' },
+    attr = {
+      bg = stl_bg,
+    },
   }
-
-  if not pd.initialized then
-    result.attr = stl_attr('Normal')
-  end
 
   return result
 end
 
 function pd.lsp()
-  local function lsp_stl(event)
-    local msg = vim.lsp.status()
-    if #msg == 0 and event ~= 'LspDetach' then
-      local client = vim.lsp.get_active_clients({ bufnr = 0 })
-      if #client ~= 0 then
-        msg = client[1].name
+  local function lsp_stl(args)
+    local client = lsp.get_client_by_id(args.data.client_id)
+    local msg = ''
+    if args.data.result then
+      local val = args.data.result.value
+      msg = val.title
+        .. ' '
+        .. (val.message and val.message .. ' ' or '')
+        .. (val.percentage and val.percentage .. '%' or '')
+      if not val.message or val.kind == 'end' then
+        msg = client.name
       end
+    elseif args.event == 'LspDetach' then
+      msg = ''
+    else
+      msg = client.name
     end
     return '%.40{"' .. msg .. '"}'
   end
@@ -188,7 +195,7 @@ function pd.gitadd()
       return #res > 0 and git_icons('added') .. res or ''
     end,
     name = 'gitadd',
-    event = { 'GitSignsUpdate' },
+    event = { 'User GitSignsUpdate' },
   }
   if not pd.initialized then
     result.attr = stl_attr('DiffAdd')
@@ -203,7 +210,7 @@ function pd.gitchange()
       return #res > 0 and git_icons('changed') .. res or ''
     end,
     name = 'gitchange',
-    event = { 'GitSignsUpdate' },
+    event = { 'User GitSignsUpdate' },
   }
 
   if not pd.initialized then
@@ -219,7 +226,7 @@ function pd.gitdelete()
       return #res > 0 and git_icons('deleted') .. res or ''
     end,
     name = 'gitdelete',
-    event = { 'GitSignsUpdate' },
+    event = { 'User GitSignsUpdate' },
   }
 
   if not pd.initialized then
@@ -229,31 +236,20 @@ function pd.gitdelete()
 end
 
 function pd.branch()
+  local icon = ' '
   local result = {
     stl = function()
-      local icon = ' '
       local res = gitsigns_data('head')
       return #res > 0 and icon .. res or 'UNKOWN'
     end,
     name = 'gitbranch',
-    event = { 'GitSignsUpdate' },
+    event = { 'User GitSignsUpdate' },
   }
   if not pd.initialized then
     result.attr = stl_attr('Include')
     result.attr.bold = true
   end
   return result
-end
-
-function pd.pad()
-  return {
-    stl = '%=',
-    name = 'pad',
-    attr = {
-      background = 'NONE',
-      foreground = 'NONE',
-    },
-  }
 end
 
 function pd.lnumcol()
@@ -269,22 +265,12 @@ function pd.lnumcol()
   return result
 end
 
-local function get_diag_sign(type)
-  local prefix = 'DiagnosticSign'
-  for _, item in ipairs(vim.fn.sign_getdefined()) do
-    if item.name == prefix .. type then
-      return item.text
-    end
-  end
-end
-
 local function diagnostic_info(severity)
   if vim.diagnostic.is_disabled(0) then
     return ''
   end
-  local tbl = { 'Error', 'Warn', 'Info', 'Hint' }
   local count = #vim.diagnostic.get(0, { severity = severity })
-  return count == 0 and '' or get_diag_sign(tbl[severity]) .. tostring(count) .. ' '
+  return count == 0 and '' or '●' .. tostring(count) .. ' '
 end
 
 function pd.diagError()
@@ -293,11 +279,9 @@ function pd.diagError()
       return diagnostic_info(1)
     end,
     name = 'diagError',
-    event = { 'DiagnosticChanged', 'BufEnter' },
+    event = { 'DiagnosticChanged' },
+    attr = stl_attr('DiagnosticError'),
   }
-  if not pd.initialized then
-    result.attr = stl_attr('DiagnosticError', true)
-  end
   return result
 end
 
@@ -307,11 +291,9 @@ function pd.diagWarn()
       return diagnostic_info(2)
     end,
     name = 'diagWarn',
-    event = { 'DiagnosticChanged', 'BufEnter' },
+    event = { 'DiagnosticChanged' },
+    attr = stl_attr('DiagnosticWarn'),
   }
-  if not pd.initialized then
-    result.attr = stl_attr('DiagnosticWarn', true)
-  end
   return result
 end
 
@@ -321,11 +303,9 @@ function pd.diagInfo()
       return diagnostic_info(3)
     end,
     name = 'diaginfo',
-    event = { 'DiagnosticChanged', 'BufEnter' },
+    event = { 'DiagnosticChanged' },
+    attr = stl_attr('DiagnosticInfo'),
   }
-  if not pd.initialized then
-    result.attr = stl_attr('DiagnosticInfo', true)
-  end
   return result
 end
 
@@ -335,23 +315,51 @@ function pd.diagHint()
       return diagnostic_info(4)
     end,
     name = 'diaghint',
-    event = { 'DiagnosticChanged', 'BufEnter' },
+    event = { 'DiagnosticChanged' },
+    attr = stl_attr('DiagnosticHint'),
   }
-  if not pd.initialized then
-    result.attr = stl_attr('DiagnosticHint', true)
-  end
   return result
 end
 
+function pd.modified()
+  return {
+    name = 'modified',
+    stl = '%{&modified?"∗∗":"--"}',
+    event = { 'BufModifiedSet' },
+    attr = {
+      bold = true,
+      bg = stl_bg,
+    },
+  }
+end
+
+function pd.eol()
+  return {
+    name = 'eol',
+    stl = path_sep() == '/' and ':' or '(Dos)',
+    event = { 'BufEnter' },
+    attr = {
+      bold = true,
+      bg = stl_bg,
+    },
+  }
+end
+
 function pd.encoding()
+  local map = {
+    ['utf-8'] = 'U',
+    ['utf-16'] = 'U16',
+    ['utf-32'] = 'U32',
+  }
   local result = {
-    stl = '%{&fileencoding?&fileencoding:&encoding}',
+    stl = vim.o.fileencoding and map[vim.o.fileencoding] or map[vim.o.encoding],
     name = 'filencode',
     event = { 'BufEnter' },
+    attr = {
+      bold = true,
+      bg = stl_bg,
+    },
   }
-  if not pd.initialized then
-    result.attr = stl_attr('Type')
-  end
   return result
 end
 
