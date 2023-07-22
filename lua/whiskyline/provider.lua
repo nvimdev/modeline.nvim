@@ -26,7 +26,8 @@ end
 
 local function alias_mode()
   return {
-    ['n'] = 'Normal',
+    --Normal
+    ['n'] = 'N-',
     ['no'] = 'O-Pending',
     ['nov'] = 'O-Pending',
     ['noV'] = 'O-Pending',
@@ -279,7 +280,7 @@ function pd.diagError()
       return diagnostic_info(1)
     end,
     name = 'diagError',
-    event = { 'DiagnosticChanged' },
+    event = { 'DiagnosticChanged', 'BufEnter' },
     attr = stl_attr('DiagnosticError'),
   }
   return result
@@ -291,7 +292,7 @@ function pd.diagWarn()
       return diagnostic_info(2)
     end,
     name = 'diagWarn',
-    event = { 'DiagnosticChanged' },
+    event = { 'DiagnosticChanged', 'BufEnter' },
     attr = stl_attr('DiagnosticWarn'),
   }
   return result
@@ -303,7 +304,7 @@ function pd.diagInfo()
       return diagnostic_info(3)
     end,
     name = 'diaginfo',
-    event = { 'DiagnosticChanged' },
+    event = { 'DiagnosticChanged', 'BufEnter' },
     attr = stl_attr('DiagnosticInfo'),
   }
   return result
@@ -315,7 +316,7 @@ function pd.diagHint()
       return diagnostic_info(4)
     end,
     name = 'diaghint',
-    event = { 'DiagnosticChanged' },
+    event = { 'DiagnosticChanged', 'BufEnter' },
     attr = stl_attr('DiagnosticHint'),
   }
   return result

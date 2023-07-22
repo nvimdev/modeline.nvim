@@ -13,6 +13,7 @@ local function default()
   local p = require('whiskyline.provider')
   local s = require('whiskyline.separator')
   local comps = {
+    -- p.mode(),
     s.space(),
     p.encoding(),
     p.eol(),
@@ -36,8 +37,6 @@ local function default()
     p.gitchange(),
     p.gitdelete(),
     p.branch(),
-    s.space(),
-    p.mode(),
     --
   }
   local e, pieces = {}, {}
