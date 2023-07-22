@@ -13,7 +13,6 @@ local function default()
   local p = require('whiskyline.provider')
   local s = require('whiskyline.separator')
   local comps = {
-    -- p.mode(),
     s.space(),
     p.encoding(),
     p.eol(),
@@ -31,6 +30,8 @@ local function default()
     p.diagHint(),
     s.pad(),
     --
+    p.mode(),
+    s.space(),
     p.lsp(),
     s.space(),
     p.gitadd(),

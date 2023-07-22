@@ -27,7 +27,7 @@ end
 local function alias_mode()
   return {
     --Normal
-    ['n'] = 'N-',
+    ['n'] = 'Normal',
     ['no'] = 'O-Pending',
     ['nov'] = 'O-Pending',
     ['noV'] = 'O-Pending',
