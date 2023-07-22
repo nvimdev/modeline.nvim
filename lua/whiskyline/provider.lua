@@ -79,7 +79,7 @@ function pd.mode()
   }
 
   if not pd.initialized then
-    result.attr = stl_attr('@keyword')
+    result.attr = stl_attr('Constant')
     result.attr.bold = true
   end
 
@@ -147,11 +147,13 @@ function pd.lsp()
         .. (val.message and val.message .. ' ' or '')
         .. (val.percentage and val.percentage .. '%' or '')
       if not val.message or val.kind == 'end' then
+        ---@diagnostic disable-next-line: need-check-nil
         msg = client.name
       end
     elseif args.event == 'LspDetach' then
       msg = ''
     else
+      ---@diagnostic disable-next-line: need-check-nil
       msg = client.name
     end
     return '%.40{"' .. msg .. '"}'
