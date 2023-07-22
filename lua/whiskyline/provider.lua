@@ -351,9 +351,12 @@ function pd.encoding()
     ['utf-8'] = 'U',
     ['utf-16'] = 'U16',
     ['utf-32'] = 'U32',
+    ['unix'] = 'U',
+    ['linux'] = 'L',
+    ['dos'] = 'W',
   }
   local result = {
-    stl = vim.o.fileencoding and map[vim.o.fileencoding] or map[vim.o.encoding],
+    stl = map[vim.o.ff] .. (vim.o.fileencoding and map[vim.o.fileencoding] or map[vim.o.encoding]),
     name = 'filencode',
     event = { 'BufEnter' },
     attr = {
