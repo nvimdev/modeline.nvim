@@ -325,7 +325,7 @@ end
 function pd.modified()
   return {
     name = 'modified',
-    stl = '%{&modified?"∗∗":"--"}',
+    stl = '%{&modified?"**":"--"}',
     event = { 'BufModifiedSet' },
     attr = {
       bold = true,
