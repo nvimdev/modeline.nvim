@@ -41,37 +41,35 @@ local function default()
     --
   }
   local e, pieces = {}, {}
-  vim.iter(comps):map(function(item)
-    if type(item.stl) == 'string' then
-      pieces[#pieces + 1] = stl_format(item.name, item.stl)
-    else
-      pieces[#pieces + 1] = item.default and stl_format(item.name, item.default) or ''
-    end
-    if item.attr and item.name then
-      stl_hl(item.name, item.attr)
-    end
+  vim
+    .iter(ipairs(comps))
+    :map(function(key, item)
+      if type(item.stl) == 'string' then
+        pieces[#pieces + 1] = stl_format(item.name, item.stl)
+      else
+        pieces[#pieces + 1] = item.default and stl_format(item.name, item.default) or ''
+        for _, event in ipairs({ unpack(item.event or {}) }) do
+          if not e[event] then
+            e[event] = {}
+          end
+          e[event][#e[event] + 1] = key
+        end
+      end
 
-    for _, event in ipairs({ unpack(item.event or {}) }) do
-      e[#e + 1] = not vim.tbl_contains(e, event) and event or nil
-    end
-  end)
+      if item.attr and item.name then
+        stl_hl(item.name, item.attr)
+      end
+    end)
+    :totable()
   return comps, e, pieces
 end
 
-local function render(comps, pieces)
+local function render(comps, events, pieces)
   return co.create(function(args)
     while true do
-      for i, item in ipairs(comps) do
-        if
-          item.event
-          and vim.tbl_contains(
-            item.event,
-            (args.event == 'User' and args.event .. ' ' .. args.match or args.event)
-          )
-          and type(item.stl) == 'function'
-        then
-          pieces[i] = stl_format(item.name, item.stl(args))
-        end
+      local event = args.event == 'User' and args.event .. ' ' .. args.match or args.event
+      for _, idx in ipairs(events[event]) do
+        pieces[idx] = stl_format(comps[idx].name, comps[idx].stl(args))
       end
 
       --because setup use a timer to defer parse and render this will cause missing
@@ -91,8 +89,8 @@ end
 function whk.setup()
   vim.defer_fn(function()
     local comps, events, pieces = default()
-    local stl_render = render(comps, pieces)
-    for _, e in ipairs(events) do
+    local stl_render = render(comps, events, pieces)
+    for _, e in ipairs(vim.tbl_keys(events)) do
       local tmp = e
       local pattern
       if e:find('User') then
