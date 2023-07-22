@@ -367,4 +367,18 @@ function pd.encoding()
   return result
 end
 
+function pd.pad()
+  return {
+    stl = '%=',
+    name = 'pad',
+  }
+end
+
+function pd.space()
+  return {
+    stl = ' ',
+    name = 'space',
+  }
+end
+
 return pd

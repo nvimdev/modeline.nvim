@@ -11,29 +11,28 @@ end
 
 local function default()
   local p = require('whiskyline.provider')
-  local s = require('whiskyline.separator')
   local comps = {
-    s.space(),
+    p.space(),
     p.encoding(),
     p.eol(),
     p.modified(),
-    s.space(),
+    p.space(),
     --
     p.fileicon(),
     p.fileinfo(),
-    s.space(),
+    p.space(),
     p.lnumcol(),
-    s.space(),
+    p.space(),
     p.diagError(),
     p.diagWarn(),
     p.diagInfo(),
     p.diagHint(),
-    s.pad(),
+    p.pad(),
     p.lsp(),
-    s.pad(),
+    p.pad(),
     --
     p.mode(),
-    s.space(),
+    p.space(),
     p.gitadd(),
     p.gitchange(),
     p.gitdelete(),
