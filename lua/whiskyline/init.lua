@@ -72,6 +72,15 @@ local function render(comps, pieces)
           pieces[i] = stl_format(item.name, item.stl(args))
         end
       end
+
+      --because setup use a timer to defer parse and render this will cause missing
+      --BufEnter event so add a safe check avoid filename and file icon can't get
+      --when running `nvim file`
+      if #pieces[7] == 0 then
+        pieces[7] = stl_format(comps[7].name, comps[7].stl(args))
+        pieces[6] = stl_format(comps[6].name, comps[6].stl(args))
+      end
+
       vim.opt.stl = table.concat(pieces)
       args = co.yield()
     end
