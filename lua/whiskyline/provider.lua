@@ -76,13 +76,8 @@ function pd.mode()
     name = 'mode',
     default = 'Normal',
     event = { 'ModeChanged' },
+    attr = stl_attr('Constant'),
   }
-
-  if not pd.initialized then
-    result.attr = stl_attr('Constant')
-    result.attr.bold = true
-  end
-
   return result
 end
 
@@ -163,12 +158,9 @@ function pd.lsp()
     stl = lsp_stl,
     name = 'Lsp',
     event = { 'LspProgress', 'LspAttach', 'LspDetach' },
+    attr = stl_attr('Function'),
   }
 
-  if not pd.initialized then
-    result.attr = stl_attr('Function')
-    result.attr.bold = true
-  end
   return result
 end
 
@@ -199,10 +191,9 @@ function pd.gitadd()
     end,
     name = 'gitadd',
     event = { 'User GitSignsUpdate' },
+    attr = stl_attr('DiffAdd'),
   }
-  if not pd.initialized then
-    result.attr = stl_attr('DiffAdd')
-  end
+
   return result
 end
 
@@ -214,11 +205,9 @@ function pd.gitchange()
     end,
     name = 'gitchange',
     event = { 'User GitSignsUpdate' },
+    attr = stl_attr('DiffChange'),
   }
 
-  if not pd.initialized then
-    result.attr = stl_attr('DiffChange')
-  end
   return result
 end
 
@@ -230,11 +219,9 @@ function pd.gitdelete()
     end,
     name = 'gitdelete',
     event = { 'User GitSignsUpdate' },
+    attr = stl_attr('DiffDelete'),
   }
 
-  if not pd.initialized then
-    result.attr = stl_attr('DiffDelete')
-  end
   return result
 end
 
@@ -247,11 +234,8 @@ function pd.branch()
     end,
     name = 'gitbranch',
     event = { 'User GitSignsUpdate' },
+    attr = stl_attr('Include'),
   }
-  if not pd.initialized then
-    result.attr = stl_attr('Include')
-    result.attr.bold = true
-  end
   return result
 end
 
@@ -260,11 +244,9 @@ function pd.lnumcol()
     stl = '%-4.(%l:%c%) %P',
     name = 'linecol',
     event = { 'CursorHold' },
+    attr = stl_attr('Label'),
   }
 
-  if not pd.initialized then
-    result.attr = stl_attr('Label')
-  end
   return result
 end
 
