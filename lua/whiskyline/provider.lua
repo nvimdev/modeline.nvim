@@ -107,20 +107,8 @@ function pd.fileicon()
 end
 
 function pd.fileinfo()
-  local function stl_file()
-    local fname = api.nvim_buf_get_name(0)
-    local sep = path_sep()
-    local parts = vim.split(fname, sep, { trimempty = true })
-    local index = #parts - 1 <= 0 and 1 or #parts - 1
-    fname = table.concat({ unpack(parts, index) }, sep)
-    if #fname == 0 then
-      fname = 'UNKNOWN'
-    end
-    return fname
-  end
-
   local result = {
-    stl = stl_file,
+    stl = '%t',
     name = 'fileinfo',
     event = { 'BufEnter' },
     attr = {
