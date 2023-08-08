@@ -122,7 +122,7 @@ end
 function pd.lsp()
   local function lsp_stl(args)
     local client = lsp.get_client_by_id(args.data.client_id)
-    local msg = ''
+    local msg = client.name
     if args.data.result then
       local val = args.data.result.value
       msg = val.title
@@ -135,9 +135,6 @@ function pd.lsp()
       end
     elseif args.event == 'LspDetach' then
       msg = ''
-    else
-      ---@diagnostic disable-next-line: need-check-nil
-      msg = client.name
     end
     return '%.40{"' .. msg .. '"}'
   end
