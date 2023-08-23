@@ -122,7 +122,7 @@ end
 function pd.lsp()
   local function lsp_stl(args)
     local client = lsp.get_client_by_id(args.data.client_id)
-    local msg = client.name
+    local msg = client and client.name or ''
     if args.data.result then
       local val = args.data.result.value
       msg = val.title
