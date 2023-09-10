@@ -151,7 +151,7 @@ end
 
 local function gitsigns_data(bufnr, type)
   local ok, dict = pcall(api.nvim_buf_get_var, bufnr, 'gitsigns_status_dict')
-  if not ok or vim.tbl_isempty(dict) then
+  if not ok or vim.tbl_isempty(dict) or not dict[type] then
     return 0
   end
 
