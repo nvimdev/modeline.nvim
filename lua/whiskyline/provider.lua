@@ -2,12 +2,12 @@ local api, uv, lsp = vim.api, vim.uv, vim.lsp
 local pd = {}
 
 local function get_stl_bg()
-  local res = api.nvim_get_hl_by_name('StatusLine', true)
-  if vim.tbl_count(res) == 0 then
+  local res = api.nvim_get_hl(0, { name = 'StatusLine' })
+  if vim.tbl_isempty(res) then
     vim.notify('[Whisky] colorschem missing StatusLine config')
     return
   end
-  return res.background
+  return res.bg
 end
 
 local stl_bg
@@ -16,11 +16,11 @@ if not stl_bg then
 end
 
 local function stl_attr(group, trans)
-  local color = api.nvim_get_hl_by_name(group, true)
+  local color = api.nvim_get_hl(0, { name = group, link = false })
   trans = trans or false
   return {
     bg = trans and 'NONE' or stl_bg,
-    fg = color.foreground,
+    fg = color.fg,
   }
 end
 
@@ -149,14 +149,13 @@ function pd.lsp()
   return result
 end
 
-local function gitsigns_data(type)
-  if not vim.b.gitsigns_status_dict then
-    return ''
+local function gitsigns_data(bufnr, type)
+  local ok, dict = pcall(api.nvim_buf_get_var, bufnr, 'gitsigns_status_dict')
+  if not ok or vim.tbl_isempty(dict) then
+    return 0
   end
 
-  local val = vim.b.gitsigns_status_dict[type]
-  val = (val == 0 or not val) and '' or tostring(val) .. (type == 'head' and '' or ' ')
-  return val
+  return dict[type]
 end
 
 local function git_icons(type)
@@ -170,12 +169,12 @@ end
 
 function pd.gitadd()
   local result = {
-    stl = function()
-      local res = gitsigns_data('added')
-      return #res > 0 and git_icons('added') .. res or ''
+    stl = function(args)
+      local res = gitsigns_data(args.buf, 'added')
+      return res > 0 and git_icons('added') .. res or ''
     end,
     name = 'gitadd',
-    event = { 'User GitSignsUpdate' },
+    event = { 'User GitSignsUpdate', 'BufEnter' },
     attr = stl_attr('DiffAdd'),
   }
 
@@ -184,12 +183,12 @@ end
 
 function pd.gitchange()
   local result = {
-    stl = function()
-      local res = gitsigns_data('changed')
-      return #res > 0 and git_icons('changed') .. res or ''
+    stl = function(args)
+      local res = gitsigns_data(args.buf, 'changed')
+      return res > 0 and git_icons('changed') .. res or ''
     end,
     name = 'gitchange',
-    event = { 'User GitSignsUpdate' },
+    event = { 'User GitSignsUpdate', 'BufEnter' },
     attr = stl_attr('DiffChange'),
   }
 
@@ -198,12 +197,12 @@ end
 
 function pd.gitdelete()
   local result = {
-    stl = function()
-      local res = gitsigns_data('removed')
-      return #res > 0 and git_icons('deleted') .. res or ''
+    stl = function(args)
+      local res = gitsigns_data(args.buf, 'removed')
+      return res > 0 and git_icons('deleted') .. res or ''
     end,
     name = 'gitdelete',
-    event = { 'User GitSignsUpdate' },
+    event = { 'User GitSignsUpdate', 'BufEnter' },
     attr = stl_attr('DiffDelete'),
   }
 
@@ -213,8 +212,8 @@ end
 function pd.branch()
   local icon = ' '
   local result = {
-    stl = function()
-      local res = gitsigns_data('head')
+    stl = function(args)
+      local res = gitsigns_data(args.buf, 'head')
       return #res > 0 and icon .. res or 'UNKOWN'
     end,
     name = 'gitbranch',
