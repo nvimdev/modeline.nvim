@@ -214,7 +214,7 @@ function pd.branch()
   local result = {
     stl = function(args)
       local res = gitsigns_data(args.buf, 'head')
-      return #res > 0 and icon .. res or 'UNKOWN'
+      return type(res) == string and #res > 0 and icon .. res or 'UNKOWN'
     end,
     name = 'gitbranch',
     event = { 'User GitSignsUpdate' },
