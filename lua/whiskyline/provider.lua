@@ -210,11 +210,11 @@ function pd.gitdelete()
 end
 
 function pd.branch()
-  local icon = ' '
+  local icon = '  '
   local result = {
     stl = function(args)
       local res = gitsigns_data(args.buf, 'head')
-      return type(res) == string and #res > 0 and icon .. res or 'UNKOWN'
+      return res and icon .. res or ' UNKNOWN'
     end,
     name = 'gitbranch',
     event = { 'User GitSignsUpdate' },
