@@ -92,6 +92,7 @@ function whk.setup()
     local pattern
     if e:find('User') then
       pattern = vim.split(e, '%s')[2]
+      tmp = 'User'
     end
 
     api.nvim_create_autocmd(tmp, {
