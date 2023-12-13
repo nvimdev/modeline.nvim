@@ -108,7 +108,7 @@ end
 
 function pd.fileinfo()
   local result = {
-    stl = '%t',
+    stl = '%f',
     name = 'fileinfo',
     event = { 'BufEnter' },
     attr = {
