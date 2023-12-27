@@ -75,12 +75,8 @@ function pd.mode()
       return m:sub(1, 1) .. '-'
     end,
     name = 'mode',
-    default = 'N',
+    default = 'N-',
     event = { 'ModeChanged' },
-    attr = {
-      bold = true,
-      bg = stl_bg,
-    },
   }
   return result
 end
