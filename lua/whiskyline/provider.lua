@@ -71,39 +71,22 @@ function pd.mode()
   local result = {
     stl = function()
       local mode = api.nvim_get_mode().mode
-      return alias[mode] or alias[string.sub(mode, 1, 1)] or 'UNK'
+      local m = alias[mode] or alias[string.sub(mode, 1, 1)] or 'UNK'
+      return m:sub(1, 1) .. '-'
     end,
     name = 'mode',
-    default = 'Normal',
+    default = 'N',
     event = { 'ModeChanged' },
-    attr = stl_attr('Constant'),
+    attr = {
+      bold = true,
+      bg = stl_bg,
+    },
   }
   return result
 end
 
 local function path_sep()
   return uv.os_uname().sysname == 'Windows_NT' and '\\' or '/'
-end
-
-function pd.fileicon()
-  local ok, devicon = pcall(require, 'nvim-web-devicons')
-  local icon, color
-
-  return {
-    stl = function()
-      if ok then
-        icon, color = devicon.get_icon_color_by_filetype(vim.bo.filetype, { default = true })
-        api.nvim_set_hl(0, 'Whiskyfileicon', { bg = stl_bg, fg = color })
-        return icon .. ' '
-      end
-      return ''
-    end,
-    name = 'fileicon',
-    event = { 'BufEnter' },
-    attr = {
-      bg = stl_bg,
-    },
-  }
 end
 
 function pd.fileinfo()
@@ -160,18 +143,19 @@ end
 
 local function git_icons(type)
   local tbl = {
-    ['added'] = ' ',
-    ['changed'] = ' ',
-    ['deleted'] = ' ',
+    ['added'] = '+',
+    ['changed'] = '~',
+    ['deleted'] = '-',
   }
   return tbl[type]
 end
 
 function pd.gitadd()
+  local sign = git_icons('added')
   local result = {
     stl = function(args)
       local res = gitsigns_data(args.buf, 'added')
-      return res > 0 and git_icons('added') .. res or ''
+      return res > 0 and ('%s%s%s'):format(sign, res, ' ') or ''
     end,
     name = 'gitadd',
     event = { 'User GitSignsUpdate', 'BufEnter' },
@@ -182,10 +166,11 @@ function pd.gitadd()
 end
 
 function pd.gitchange()
+  local sign = git_icons('changed')
   local result = {
     stl = function(args)
       local res = gitsigns_data(args.buf, 'changed')
-      return res > 0 and git_icons('changed') .. res or ''
+      return res > 0 and ('%s%s%s'):format(sign, res, ' ') or ''
     end,
     name = 'gitchange',
     event = { 'User GitSignsUpdate', 'BufEnter' },
@@ -196,10 +181,11 @@ function pd.gitchange()
 end
 
 function pd.gitdelete()
+  local sign = git_icons('deleted')
   local result = {
     stl = function(args)
       local res = gitsigns_data(args.buf, 'removed')
-      return res > 0 and git_icons('deleted') .. res or ''
+      return res > 0 and ('%s%s'):format(sign, res) or ''
     end,
     name = 'gitdelete',
     event = { 'User GitSignsUpdate', 'BufEnter' },
@@ -225,10 +211,10 @@ end
 
 function pd.lnumcol()
   local result = {
-    stl = '%-4.(%l:%c%) %P',
+    stl = '%-4.(L%l:C%c%) %P',
     name = 'linecol',
     event = { 'CursorHold' },
-    attr = stl_attr('Label'),
+    attr = stl_attr('@field'),
   }
 
   return result
@@ -239,7 +225,7 @@ local function diagnostic_info(severity)
     return ''
   end
   local count = #vim.diagnostic.get(0, { severity = severity })
-  return count == 0 and '' or '⏶' .. tostring(count) .. ' '
+  return count == 0 and '' or '' .. tostring(count) .. ' '
 end
 
 function pd.diagError()

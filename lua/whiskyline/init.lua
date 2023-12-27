@@ -13,25 +13,24 @@ local function default()
   local p = require('whiskyline.provider')
   local comps = {
     p.space(),
+    p.mode(),
     p.encoding(),
     p.eol(),
     p.modified(),
     p.space(),
     --
-    p.fileicon(),
     p.fileinfo(),
     p.space(),
     p.lnumcol(),
     p.space(),
+    p.pad(),
     p.diagError(),
     p.diagWarn(),
     p.diagInfo(),
     p.diagHint(),
     p.pad(),
-    p.lsp(),
-    p.pad(),
     --
-    p.mode(),
+    p.lsp(),
     p.space(),
     p.gitadd(),
     p.gitchange(),
