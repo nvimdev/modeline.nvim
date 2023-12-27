@@ -214,7 +214,7 @@ function pd.lnumcol()
     stl = '%-4.(L%l:C%c%) %P',
     name = 'linecol',
     event = { 'CursorHold' },
-    attr = stl_attr('@field'),
+    attr = stl_attr('Include'),
   }
 
   return result
