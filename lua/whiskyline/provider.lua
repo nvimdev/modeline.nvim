@@ -91,12 +91,9 @@ end
 
 function pd.fileinfo()
   local result = {
-    stl = '%f',
+    stl = '%f %P',
     name = 'fileinfo',
     event = { 'BufEnter' },
-    attr = {
-      bg = stl_bg,
-    },
   }
 
   return result
@@ -211,10 +208,9 @@ end
 
 function pd.lnumcol()
   local result = {
-    stl = '%-4.(L%l:C%c%) %P',
+    stl = '%-4.(L%l:C%c%)',
     name = 'linecol',
     event = { 'CursorHold' },
-    attr = stl_attr('Include'),
   }
 
   return result
