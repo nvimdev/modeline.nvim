@@ -273,10 +273,6 @@ function pd.modified()
     name = 'modified',
     stl = '%{&modified?"**":"--"}',
     event = { 'BufModifiedSet' },
-    attr = {
-      bold = true,
-      bg = stl_bg,
-    },
   }
 end
 
@@ -305,10 +301,6 @@ function pd.encoding()
     stl = map[vim.o.ff] .. (vim.o.fileencoding and map[vim.o.fileencoding] or map[vim.o.encoding]),
     name = 'filencode',
     event = { 'BufEnter' },
-    attr = {
-      bold = true,
-      bg = stl_bg,
-    },
   }
   return result
 end
