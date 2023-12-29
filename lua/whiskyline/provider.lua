@@ -69,7 +69,6 @@ end
 function pd.mode()
   local alias = alias_mode()
   local color = api.nvim_get_hl(0, { name = 'PreProc' })
-  print(vim.inspect(color))
   local result = {
     stl = function()
       local mode = api.nvim_get_mode().mode
