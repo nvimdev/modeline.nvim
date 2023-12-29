@@ -68,7 +68,6 @@ end
 
 function pd.mode()
   local alias = alias_mode()
-  local color = api.nvim_get_hl(0, { name = 'PreProc' })
   local result = {
     stl = function()
       local mode = api.nvim_get_mode().mode
@@ -76,12 +75,8 @@ function pd.mode()
       return m:sub(1, 3):upper()
     end,
     name = 'mode',
-    default = 'N',
+    default = 'NOR',
     event = { 'ModeChanged' },
-    attr = {
-      bg = color.fg,
-      bold = true,
-    },
   }
   return result
 end
