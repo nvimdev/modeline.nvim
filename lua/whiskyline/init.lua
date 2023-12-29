@@ -12,8 +12,8 @@ end
 local function default()
   local p = require('whiskyline.provider')
   local comps = {
-    p.space(),
     p.mode(),
+    p.space(),
     p.encoding(),
     p.eol(),
     p.modified(),
