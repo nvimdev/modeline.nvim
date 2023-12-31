@@ -219,17 +219,33 @@ function pd.lnumcol()
 end
 
 local function diagnostic_info(severity)
-  if vim.diagnostic.is_disabled(0) then
-    return ''
+  return function()
+    if vim.diagnostic.is_disabled(0) then
+      return ''
+    end
+
+    local ns = api.nvim_get_namespaces()
+    local key = vim.iter(ns):find(function(k)
+      return k:find('diagnostic/signs')
+    end)
+    if not key then
+      return ''
+    end
+    local signs = api.nvim_buf_get_extmarks(0, ns[key], 0, -1, { details = true, type = 'sign' })
+    local t = vim.iter(signs):find(function(k)
+      local text = (vim.diagnostic.severity[severity]):lower()
+      return (k[4].sign_hl_group):lower():find(text)
+    end)
+    local count = #vim.diagnostic.get(0, { severity = severity })
+    return t and t[4].sign_text .. count or ''
   end
-  local count = #vim.diagnostic.get(0, { severity = severity })
-  return count == 0 and '' or '' .. tostring(count) .. ' '
 end
 
 function pd.diagError()
+  local f = diagnostic_info(vim.diagnostic.severity.E)
   local result = {
     stl = function()
-      return diagnostic_info(1)
+      return f()
     end,
     name = 'diagError',
     event = { 'DiagnosticChanged', 'BufEnter' },
@@ -239,9 +255,10 @@ function pd.diagError()
 end
 
 function pd.diagWarn()
+  local f = diagnostic_info(vim.diagnostic.severity.W)
   local result = {
     stl = function()
-      return diagnostic_info(2)
+      return f()
     end,
     name = 'diagWarn',
     event = { 'DiagnosticChanged', 'BufEnter' },
@@ -251,9 +268,10 @@ function pd.diagWarn()
 end
 
 function pd.diagInfo()
+  local f = diagnostic_info(vim.diagnostic.severity.I)
   local result = {
     stl = function()
-      return diagnostic_info(3)
+      return f()
     end,
     name = 'diaginfo',
     event = { 'DiagnosticChanged', 'BufEnter' },
@@ -263,9 +281,10 @@ function pd.diagInfo()
 end
 
 function pd.diagHint()
+  local f = diagnostic_info(vim.diagnostic.severity.HINT)
   local result = {
     stl = function()
-      return diagnostic_info(4)
+      return f()
     end,
     name = 'diaghint',
     event = { 'DiagnosticChanged', 'BufEnter' },
