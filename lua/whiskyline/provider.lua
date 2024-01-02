@@ -236,7 +236,7 @@ local function diagnostic_info(severity)
       local text = (vim.diagnostic.severity[severity]):lower()
       return (k[4].sign_hl_group):lower():find(text)
     end)
-    local count = #vim.diagnostic.get(0, { severity = severity })
+    local count = #vim.diagnostic.count(0, { severity = severity })
     return t and t[4].sign_text .. count or ''
   end
 end
