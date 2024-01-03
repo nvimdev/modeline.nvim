@@ -124,7 +124,7 @@ function pd.lsp()
   local result = {
     stl = lsp_stl,
     name = 'Lsp',
-    event = { 'LspProgress', 'LspAttach', 'LspDetach' },
+    event = { 'LspProgress', 'LspAttach', 'LspDetach', 'BufEnter' },
     attr = stl_attr('Function'),
   }
 
