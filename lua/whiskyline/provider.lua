@@ -103,9 +103,13 @@ end
 
 function pd.lsp()
   local function lsp_stl(args)
-    local client = lsp.get_client_by_id(args.data.client_id)
+    local client = lsp.get_clients({ bufnr = args.buf })[1]
+    if not client then
+      return ''
+    end
+
     local msg = client and client.name or ''
-    if args.data.result then
+    if args.data and args.data.result then
       local val = args.data.result.value
       msg = val.title
         .. ' '
@@ -115,6 +119,8 @@ function pd.lsp()
         ---@diagnostic disable-next-line: need-check-nil
         msg = client.name
       end
+    elseif args.event == 'BufEnter' then
+      msg = client.name
     elseif args.event == 'LspDetach' then
       msg = ''
     end
@@ -124,7 +130,7 @@ function pd.lsp()
   local result = {
     stl = lsp_stl,
     name = 'Lsp',
-    event = { 'LspProgress', 'LspAttach', 'LspDetach' },
+    event = { 'LspProgress', 'LspAttach', 'LspDetach', 'BufEnter' },
     attr = stl_attr('Function'),
   }
 
