@@ -243,7 +243,8 @@ local function diagnostic_info(severity)
       return (k[4].sign_hl_group):lower():find(text)
     end)
     local count = #vim.diagnostic.get(0, { severity = severity })
-    return t and t[4].sign_text .. count or ''
+    local sign_text = t and t[4].sign_text or nil
+    return t and t[4].sign_text:gsub('%s$', '') .. count or ''
   end
 end
 
