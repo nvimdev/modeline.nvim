@@ -109,8 +109,8 @@ function pd.lsp()
     end
 
     local msg = client and client.name or ''
-    if args.data and args.data.result then
-      local val = args.data.result.value
+    if args.data and args.data.params then
+      local val = args.data.params.value
       msg = val.title
         .. ' '
         .. (val.message and val.message .. ' ' or '')
@@ -226,7 +226,7 @@ end
 
 local function diagnostic_info(severity)
   return function()
-    if vim.diagnostic.is_disabled(0) then
+    if not vim.diagnostic.is_enabled({ bufnr = 0 }) then
       return ''
     end
 
@@ -243,7 +243,6 @@ local function diagnostic_info(severity)
       return (k[4].sign_hl_group):lower():find(text)
     end)
     local count = #vim.diagnostic.get(0, { severity = severity })
-    local sign_text = t and t[4].sign_text or nil
     return t and t[4].sign_text:gsub('%s$', '') .. count or ''
   end
 end
