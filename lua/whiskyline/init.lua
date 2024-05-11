@@ -1,8 +1,8 @@
-local co, api = coroutine, vim.api
+local co, api, iter = coroutine, vim.api, vim.iter
 local whk = {}
 
 local function stl_format(name, val)
-  return '%#Whisky' .. name .. '#' .. val .. '%*'
+  return '%#Whisky' .. (name or 'Padding') .. '#' .. val .. '%*'
 end
 
 local function stl_hl(name, attr)
@@ -11,27 +11,31 @@ end
 
 local function default()
   local p = require('whiskyline.provider')
+  local pad = '%='
+  local space = ' '
   local comps = {
     p.mode(),
-    p.space(),
+    space,
     p.encoding(),
     p.eol(),
     p.modified(),
-    p.space(),
+    space,
     --
     p.fileinfo(),
-    p.space(),
+    space,
     p.diagError(),
     p.diagWarn(),
     p.diagInfo(),
     p.diagHint(),
-    p.space(),
-    p.pad(),
+    space,
+    pad,
+    p.progress(),
+    space,
     p.lsp(),
-    p.pad(),
+    pad,
     --
     p.lnumcol(),
-    p.space(),
+    space,
     p.gitadd(),
     p.gitchange(),
     p.gitdelete(),
@@ -39,10 +43,11 @@ local function default()
     --
   }
   local e, pieces = {}, {}
-  vim
-    .iter(ipairs(comps))
+  iter(ipairs(comps))
     :map(function(key, item)
-      if type(item.stl) == 'string' then
+      if type(item) == 'string' then
+        pieces[#pieces + 1] = stl_format(nil, item)
+      elseif type(item.stl) == 'string' then
         pieces[#pieces + 1] = stl_format(item.name, item.stl)
       else
         pieces[#pieces + 1] = item.default and stl_format(item.name, item.default) or ''
@@ -53,7 +58,6 @@ local function default()
           e[event][#e[event] + 1] = key
         end
       end
-
       if item.attr and item.name then
         stl_hl(item.name, item.attr)
       end
@@ -69,14 +73,6 @@ local function render(comps, events, pieces)
       for _, idx in ipairs(events[event]) do
         pieces[idx] = stl_format(comps[idx].name, comps[idx].stl(args))
       end
-
-      --because setup use a timer to defer parse and render this will cause missing
-      --BufEnter event so add a safe check avoid filename and file icon can't get
-      --when running `nvim file`
-      if #pieces[6] == 0 then
-        pieces[6] = stl_format(comps[6].name, comps[6].stl(args))
-      end
-
       vim.opt.stl = table.concat(pieces)
       args = co.yield()
     end
