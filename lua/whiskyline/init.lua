@@ -1,12 +1,7 @@
 local co, api, iter = coroutine, vim.api, vim.iter
-local whk = {}
 
 local function stl_format(name, val)
   return '%#Whisky' .. (name or 'Padding') .. '#' .. val .. '%*'
-end
-
-local function stl_hl(name, attr)
-  api.nvim_set_hl(0, 'Whisky' .. name, attr)
 end
 
 local function default()
@@ -59,7 +54,7 @@ local function default()
         end
       end
       if item.attr and item.name then
-        stl_hl(item.name, item.attr)
+        api.nvim_set_hl(0, ('Whisky%s'):format(item.name), item.attr)
       end
     end)
     :totable()
@@ -79,33 +74,32 @@ local function render(comps, events, pieces)
   end)
 end
 
-function whk.setup()
-  --move to next event loop
-  --that mean must lazyload this plugin
-  vim.defer_fn(function()
-    local comps, events, pieces = default()
-    local stl_render = render(comps, events, pieces)
-    for _, e in ipairs(vim.tbl_keys(events)) do
-      local tmp = e
-      local pattern
-      if e:find('User') then
-        pattern = vim.split(e, '%s')[2]
-        tmp = 'User'
+return {
+  setup = function()
+    --move to next event loop
+    --that mean must lazyload this plugin
+    vim.defer_fn(function()
+      local comps, events, pieces = default()
+      local stl_render = render(comps, events, pieces)
+      for _, e in ipairs(vim.tbl_keys(events)) do
+        local tmp = e
+        local pattern
+        if e:find('User') then
+          pattern = vim.split(e, '%s')[2]
+          tmp = 'User'
+        end
+        api.nvim_create_autocmd(tmp, {
+          pattern = pattern,
+          callback = function(args)
+            vim.schedule(function()
+              local ok, res = co.resume(stl_render, args)
+              if not ok then
+                vim.notify('[Whisky] render failed ' .. res, vim.log.levels.ERROR)
+              end
+            end)
+          end,
+        })
       end
-
-      api.nvim_create_autocmd(tmp, {
-        pattern = pattern,
-        callback = function(args)
-          vim.schedule(function()
-            local ok, res = co.resume(stl_render, args)
-            if not ok then
-              vim.notify('[Whisky] render failed ' .. res, vim.log.levels.ERROR)
-            end
-          end)
-        end,
-      })
-    end
-  end, 0)
-end
-
-return whk
+    end, 0)
+  end,
+}

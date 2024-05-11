@@ -4,22 +4,17 @@ local pd = {}
 local function get_stl_bg()
   local res = api.nvim_get_hl(0, { name = 'StatusLine' })
   if vim.tbl_isempty(res) then
-    vim.notify('[Whisky] colorschem missing StatusLine config')
+    vim.notify('[WhiskyLine:] colorscheme missing StatusLine config')
     return
   end
   return res.bg
-end
-
-local stl_bg
-if not stl_bg then
-  stl_bg = get_stl_bg()
 end
 
 local function stl_attr(group, trans)
   local color = api.nvim_get_hl(0, { name = group, link = false })
   trans = trans or false
   return {
-    bg = trans and 'NONE' or stl_bg,
+    bg = trans and 'NONE' or get_stl_bg(),
     fg = color.fg,
   }
 end
@@ -137,7 +132,7 @@ function pd.lsp()
       elseif args.event == 'LspDetach' then
         msg = ''
       end
-      return '%.40{"' .. msg .. '"}'
+      return '%-25.25{"' .. msg .. '"}'
     end,
     name = 'Lsp',
     event = { 'LspProgress', 'LspAttach', 'LspDetach', 'BufEnter' },
@@ -306,7 +301,7 @@ function pd.eol()
     event = { 'BufEnter' },
     attr = {
       bold = true,
-      bg = stl_bg,
+      bg = get_stl_bg(),
     },
   }
 end
