@@ -105,7 +105,7 @@ function pd.progress()
     end,
     name = 'LspProgress',
     event = { 'LspProgress' },
-    attr = stl_attr('Function'),
+    attr = stl_attr('String'),
   }
 end
 
