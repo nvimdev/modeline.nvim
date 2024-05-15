@@ -216,11 +216,10 @@ function pd.lnumcol()
 end
 
 local function diagnostic_info(severity)
-  return function()
+  return function(args)
     if not vim.diagnostic.is_enabled({ bufnr = 0 }) then
       return ''
     end
-
     local ns = api.nvim_get_namespaces()
     local key = vim.iter(ns):find(function(k)
       return k:find('diagnostic/signs')
@@ -228,61 +227,20 @@ local function diagnostic_info(severity)
     if not key then
       return ''
     end
-    local signs = api.nvim_buf_get_extmarks(0, ns[key], 0, -1, { details = true, type = 'sign' })
-    local t = vim.iter(signs):find(function(k)
-      local text = (vim.diagnostic.severity[severity]):lower()
-      return (k[4].sign_hl_group):lower():find(text)
-    end)
+    ---@diagnostic disable-next-line: param-type-mismatch
+    local signs = vim.tbl_get(vim.diagnostic.config(), 'signs', 'text') or { 'E', 'W', 'I', 'H' }
     local count = #vim.diagnostic.get(0, { severity = severity })
-    return t and t[4].sign_text:gsub('%s$', '') .. count or ''
+    return count > 0 and signs[severity] .. count or ''
   end
 end
 
-function pd.diagError()
-  local f = diagnostic_info(vim.diagnostic.severity.E)
+--TODO(glepnir): can't remove diag_t here ?
+function pd.diagnostic(diag_t)
   return {
-    stl = function()
-      return f()
-    end,
-    name = 'diagError',
+    stl = diagnostic_info(diag_t),
+    name = 'diag' .. vim.diagnostic.severity[diag_t],
     event = { 'DiagnosticChanged', 'BufEnter' },
-    attr = stl_attr('DiagnosticError'),
-  }
-end
-
-function pd.diagWarn()
-  local f = diagnostic_info(vim.diagnostic.severity.W)
-  return {
-    stl = function()
-      return f()
-    end,
-    name = 'diagWarn',
-    event = { 'DiagnosticChanged', 'BufEnter' },
-    attr = stl_attr('DiagnosticWarn'),
-  }
-end
-
-function pd.diagInfo()
-  local f = diagnostic_info(vim.diagnostic.severity.I)
-  return {
-    stl = function()
-      return f()
-    end,
-    name = 'diaginfo',
-    event = { 'DiagnosticChanged', 'BufEnter' },
-    attr = stl_attr('DiagnosticInfo'),
-  }
-end
-
-function pd.diagHint()
-  local f = diagnostic_info(vim.diagnostic.severity.HINT)
-  return {
-    stl = function()
-      return f()
-    end,
-    name = 'diaghint',
-    event = { 'DiagnosticChanged', 'BufEnter' },
-    attr = stl_attr('DiagnosticHint'),
+    attr = stl_attr('Diagnostic' .. vim.diagnostic.severity[diag_t]),
   }
 end
 

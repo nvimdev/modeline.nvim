@@ -1,7 +1,7 @@
 local co, api, iter = coroutine, vim.api, vim.iter
 
 local function stl_format(name, val)
-  return '%#Whisky' .. (name or 'Padding') .. '#' .. val .. '%*'
+  return '%#Whisky' .. name .. '#' .. val .. '%*'
 end
 
 local function default()
@@ -18,10 +18,10 @@ local function default()
     --
     p.fileinfo(),
     space,
-    p.diagError(),
-    p.diagWarn(),
-    p.diagInfo(),
-    p.diagHint(),
+    p.diagnostic(vim.diagnostic.severity.E),
+    p.diagnostic(vim.diagnostic.severity.W),
+    p.diagnostic(vim.diagnostic.severity.I),
+    p.diagnostic(vim.diagnostic.severity.N),
     space,
     pad,
     p.progress(),
@@ -41,7 +41,7 @@ local function default()
   iter(ipairs(comps))
     :map(function(key, item)
       if type(item) == 'string' then
-        pieces[#pieces + 1] = stl_format(nil, item)
+        pieces[#pieces + 1] = stl_format('Padding', item)
       elseif type(item.stl) == 'string' then
         pieces[#pieces + 1] = stl_format(item.name, item.stl)
       else
