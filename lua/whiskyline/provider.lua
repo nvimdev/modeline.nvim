@@ -140,71 +140,46 @@ function pd.lsp()
   }
 end
 
-local function gitsigns_data(bufnr, type)
-  local ok, dict = pcall(api.nvim_buf_get_var, bufnr, 'gitsigns_status_dict')
-  if not ok or vim.tbl_isempty(dict) or not dict[type] then
-    return 0
-  end
-  return dict[type]
-end
-
-local function git_icons(type)
-  local tbl = {
+local function gitsigns_data(git_t)
+  local signs = {
     ['added'] = '+',
     ['changed'] = '~',
-    ['deleted'] = '-',
+    ['removed'] = '-',
+    ['head'] = ' ',
   }
-  return tbl[type]
+  return function(args)
+    local ok, dict = pcall(api.nvim_buf_get_var, args.buf, 'gitsigns_status_dict')
+    if
+      not ok
+      or vim.tbl_isempty(dict)
+      or not dict[git_t]
+      or (type(dict[git_t]) == 'number' and dict[git_t] <= 0)
+    then
+      return ''
+    end
+    if git_t == 'head' and dict[git_t] == '' then
+      local obj = vim
+        .system({ 'git', 'config', '--get', 'init.defaultBranch' }, { text = true })
+        :wait()
+      if #obj.stdout > 0 then
+        dict[git_t] = vim.trim(obj.stdout)
+      end
+    end
+    return ('%s%s%s'):format(signs[git_t], dict[git_t], ' ')
+  end
 end
 
-function pd.gitadd()
-  local sign = git_icons('added')
+function pd.gitinfo(git_t)
+  local alias = {
+    ['added'] = 'Add',
+    ['changed'] = 'Change',
+    ['removed'] = 'Delete',
+  }
   return {
-    stl = function(args)
-      local res = gitsigns_data(args.buf, 'added')
-      return res > 0 and ('%s%s%s'):format(sign, res, ' ') or ''
-    end,
-    name = 'gitadd',
+    stl = gitsigns_data(git_t),
+    name = 'git' .. git_t,
     event = { 'User GitSignsUpdate', 'BufEnter' },
-    attr = stl_attr('DiffAdd'),
-  }
-end
-
-function pd.gitchange()
-  local sign = git_icons('changed')
-  return {
-    stl = function(args)
-      local res = gitsigns_data(args.buf, 'changed')
-      return res > 0 and ('%s%s%s'):format(sign, res, ' ') or ''
-    end,
-    name = 'gitchange',
-    event = { 'User GitSignsUpdate', 'BufEnter' },
-    attr = stl_attr('DiffChange'),
-  }
-end
-
-function pd.gitdelete()
-  local sign = git_icons('deleted')
-  return {
-    stl = function(args)
-      local res = gitsigns_data(args.buf, 'removed')
-      return res > 0 and ('%s%s'):format(sign, res) or ''
-    end,
-    name = 'gitdelete',
-    event = { 'User GitSignsUpdate', 'BufEnter' },
-    attr = stl_attr('DiffDelete'),
-  }
-end
-
-function pd.branch()
-  return {
-    stl = function(args)
-      local res = gitsigns_data(args.buf, 'head')
-      return res and '  ' .. res or ' UNKNOWN'
-    end,
-    name = 'gitbranch',
-    event = { 'User GitSignsUpdate' },
-    attr = stl_attr('Include'),
+    attr = stl_attr(git_t == 'head' and 'Include' or 'Diff' .. alias[git_t]),
   }
 end
 
@@ -216,7 +191,7 @@ function pd.lnumcol()
 end
 
 local function diagnostic_info(severity)
-  return function(args)
+  return function()
     if not vim.diagnostic.is_enabled({ bufnr = 0 }) then
       return ''
     end

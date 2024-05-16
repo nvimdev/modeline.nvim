@@ -31,10 +31,10 @@ local function default()
     --
     p.lnumcol(),
     space,
-    p.gitadd(),
-    p.gitchange(),
-    p.gitdelete(),
-    p.branch(),
+    p.gitinfo('added'),
+    p.gitinfo('changed'),
+    p.gitinfo('removed'),
+    p.gitinfo('head'),
     --
   }
   local e, pieces = {}, {}
