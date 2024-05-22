@@ -10,11 +10,11 @@ local function get_stl_bg()
   return res.bg
 end
 
-local function stl_attr(group, trans)
+local stl_bg = get_stl_bg()
+local function stl_attr(group)
   local color = api.nvim_get_hl(0, { name = group, link = false })
-  trans = trans or false
   return {
-    bg = trans and 'NONE' or get_stl_bg(),
+    bg = stl_bg,
     fg = color.fg,
   }
 end
