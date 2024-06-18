@@ -83,7 +83,7 @@ end
 
 function pd.fileinfo()
   return {
-    stl = '%f %P',
+    stl = [[%{expand('%:t')} %P]],
     name = 'fileinfo',
     event = { 'BufEnter' },
   }
@@ -222,7 +222,7 @@ end
 function pd.modified()
   return {
     name = 'modified',
-    stl = '%{&modified?"**":"--"}',
+    stl = [[%{&readonly?(&modified?'%%':'%*'):(&modified?'**':'--')}]],
     event = { 'BufModifiedSet' },
   }
 end
@@ -232,10 +232,6 @@ function pd.eol()
     name = 'eol',
     stl = (not uv.os_uname().sysname:find('Windows')) and ':' or '(Dos)',
     event = { 'BufEnter' },
-    attr = {
-      bold = true,
-      bg = get_stl_bg(),
-    },
   }
 end
 
