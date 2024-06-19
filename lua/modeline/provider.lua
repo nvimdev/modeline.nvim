@@ -83,9 +83,14 @@ end
 
 function pd.fileinfo()
   return {
-    stl = [[%{expand('%:t')} %P]],
+    stl = [[%{expand('%:t')}]],
     name = 'fileinfo',
     event = { 'BufEnter' },
+    attr = {
+      bold = true,
+      fg = 'black',
+      bg = stl_bg,
+    },
   }
 end
 
@@ -132,11 +137,10 @@ function pd.lsp()
       elseif args.event == 'LspDetach' then
         msg = ''
       end
-      return '%-25.25{"' .. msg .. '"}'
+      return '%.25{"' .. msg .. '"}'
     end,
     name = 'Lsp',
     event = { 'LspProgress', 'LspAttach', 'LspDetach', 'BufEnter' },
-    attr = stl_attr('Function'),
   }
 end
 
@@ -185,7 +189,7 @@ end
 
 function pd.lnumcol()
   return {
-    stl = '%-4.(L%l:C%c%)',
+    stl = ' %P (%(%l,%c%))',
     name = 'linecol',
   }
 end

@@ -1,11 +1,11 @@
 local co, api, iter = coroutine, vim.api, vim.iter
 
 local function stl_format(name, val)
-  return '%#Whisky' .. name .. '#' .. val .. '%*'
+  return '%#ModeLine' .. name .. '#' .. val .. '%*'
 end
 
 local function default()
-  local p = require('whiskyline.provider')
+  local p = require('modeline.provider')
   local pad = '%='
   local space = ' '
   local comps = {
@@ -18,18 +18,18 @@ local function default()
     --
     p.fileinfo(),
     space,
-    p.diagnostic(vim.diagnostic.severity.E),
-    p.diagnostic(vim.diagnostic.severity.W),
-    p.diagnostic(vim.diagnostic.severity.I),
-    p.diagnostic(vim.diagnostic.severity.N),
-    space,
+    p.lnumcol(),
     pad,
     p.progress(),
     space,
     p.lsp(),
+    space,
+    p.diagnostic(vim.diagnostic.severity.E),
+    p.diagnostic(vim.diagnostic.severity.W),
+    p.diagnostic(vim.diagnostic.severity.I),
+    p.diagnostic(vim.diagnostic.severity.N),
     pad,
     --
-    p.lnumcol(),
     space,
     p.gitinfo('added'),
     p.gitinfo('changed'),
@@ -54,7 +54,7 @@ local function default()
         end
       end
       if item.attr and item.name then
-        api.nvim_set_hl(0, ('Whisky%s'):format(item.name), item.attr)
+        api.nvim_set_hl(0, ('ModeLine%s'):format(item.name), item.attr)
       end
     end)
     :totable()
@@ -94,7 +94,7 @@ return {
             vim.schedule(function()
               local ok, res = co.resume(stl_render, args)
               if not ok then
-                vim.notify('[Whisky] render failed ' .. res, vim.log.levels.ERROR)
+                vim.notify('[ModeLine] render failed ' .. res, vim.log.levels.ERROR)
               end
             end)
           end,
