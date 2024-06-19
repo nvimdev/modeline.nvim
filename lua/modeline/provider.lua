@@ -125,10 +125,10 @@ function pd.lsp()
       if args.data and args.data.params then
         local val = args.data.params.value
         if not val.message or val.kind == 'end' then
-          msg = client.name
-          if client.root_dir then
-            msg = msg .. (':%s'):format(vim.fn.fnamemodify(client.root_dir, ':t'))
-          end
+          msg = ('%s:%s'):format(
+            client.name,
+            client.root_dir and vim.fn.fnamemodify(client.root_dir, ':t') or 'single'
+          )
         else
           msg = val.title
             .. ' '
@@ -136,7 +136,10 @@ function pd.lsp()
             .. (val.percentage and val.percentage .. '%' or '')
         end
       elseif args.event == 'BufEnter' then
-        msg = client.name
+        msg = ('%s:%s'):format(
+          client.name,
+          client.root_dir and vim.fn.fnamemodify(client.root_dir, ':t') or 'single'
+        )
       elseif args.event == 'LspDetach' then
         msg = ''
       end
