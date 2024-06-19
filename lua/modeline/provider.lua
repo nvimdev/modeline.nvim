@@ -126,6 +126,9 @@ function pd.lsp()
         local val = args.data.params.value
         if not val.message or val.kind == 'end' then
           msg = client.name
+          if client.root_dir then
+            msg = msg .. (':%s'):format(vim.fn.fnamemodify(client.root_dir, ':t'))
+          end
         else
           msg = val.title
             .. ' '
@@ -137,7 +140,7 @@ function pd.lsp()
       elseif args.event == 'LspDetach' then
         msg = ''
       end
-      return '%.25{"' .. msg .. '"}'
+      return '%-20s' .. msg
     end,
     name = 'Lsp',
     event = { 'LspProgress', 'LspAttach', 'LspDetach', 'BufEnter' },
@@ -149,7 +152,7 @@ local function gitsigns_data(git_t)
     ['added'] = '+',
     ['changed'] = '~',
     ['removed'] = '-',
-    ['head'] = ' ',
+    ['head'] = '',
   }
   return function(args)
     local ok, dict = pcall(api.nvim_buf_get_var, args.buf, 'gitsigns_status_dict')

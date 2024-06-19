@@ -19,23 +19,22 @@ local function default()
     p.fileinfo(),
     space,
     p.lnumcol(),
+    space,
+    space,
+    p.gitinfo('head'),
+    p.gitinfo('added'),
+    p.gitinfo('changed'),
+    p.gitinfo('removed'),
+    space,
     pad,
-    p.progress(),
-    space,
-    p.lsp(),
-    space,
     p.diagnostic(vim.diagnostic.severity.E),
     p.diagnostic(vim.diagnostic.severity.W),
     p.diagnostic(vim.diagnostic.severity.I),
     p.diagnostic(vim.diagnostic.severity.N),
-    pad,
-    --
+    p.progress(),
     space,
-    p.gitinfo('added'),
-    p.gitinfo('changed'),
-    p.gitinfo('removed'),
-    p.gitinfo('head'),
-    --
+    p.lsp(),
+    pad,
   }
   local e, pieces = {}, {}
   iter(ipairs(comps))
