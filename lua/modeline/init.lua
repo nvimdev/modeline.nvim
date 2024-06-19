@@ -15,6 +15,7 @@ local function default()
     p.eol(),
     p.modified(),
     space,
+    space,
     --
     p.fileinfo(),
     space,
