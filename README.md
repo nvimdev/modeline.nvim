@@ -1,4 +1,6 @@
-# whiskyline.nvim
+# modeline.nvim
+
+implement emacs default modeline on neovim.
 
 - async using coroutine
 - event drive
@@ -6,6 +8,5 @@
 - Lsp progress message
 - minimalist
 
-my perosnal statusline not support configuration.
 
 # GPL v3
