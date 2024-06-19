@@ -183,7 +183,7 @@ function pd.gitinfo(git_t)
     stl = gitsigns_data(git_t),
     name = 'git' .. git_t,
     event = { 'User GitSignsUpdate', 'BufEnter' },
-    attr = git_t ~= 'head' and stl_attr('Diff' .. alias[git_t]) or nil,
+    attr = git_t ~= 'head' and stl_attr('GitSigns' .. alias[git_t]) or nil,
   }
 end
 
