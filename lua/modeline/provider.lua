@@ -1,5 +1,4 @@
-local api, uv, lsp = vim.api, vim.uv, vim.lsp
-local pd = {}
+local api, uv, lsp, M = vim.api, vim.uv, vim.lsp, {}
 
 local function get_stl_bg()
   local res = api.nvim_get_hl(0, { name = 'StatusLine' })
@@ -61,7 +60,7 @@ local function alias_mode()
   }
 end
 
-function pd.mode()
+function M.mode()
   local alias = alias_mode()
   local color = api.nvim_get_hl(0, { name = 'PreProc' })
   return {
@@ -81,7 +80,7 @@ function pd.mode()
   }
 end
 
-function pd.fileinfo()
+function M.fileinfo()
   return {
     stl = [[%{expand('%:t')}]],
     name = 'fileinfo',
@@ -94,7 +93,7 @@ function pd.fileinfo()
   }
 end
 
-function pd.progress()
+function M.progress()
   local spinner = { '⣶', '⣧', '⣏', '⡟', '⠿', '⢻', '⣹', '⣼' }
   local idx = 1
   return {
@@ -114,7 +113,7 @@ function pd.progress()
   }
 end
 
-function pd.lsp()
+function M.lsp()
   return {
     stl = function(args)
       local client = lsp.get_clients({ bufnr = args.buf })[1]
@@ -179,7 +178,7 @@ local function gitsigns_data(git_t)
   end
 end
 
-function pd.gitinfo(git_t)
+function M.gitinfo(git_t)
   local alias = {
     ['added'] = 'Add',
     ['changed'] = 'Change',
@@ -193,7 +192,7 @@ function pd.gitinfo(git_t)
   }
 end
 
-function pd.lnumcol()
+function M.lnumcol()
   return {
     stl = ' %P (%(%l,%c%))',
     name = 'linecol',
@@ -220,7 +219,7 @@ local function diagnostic_info(severity)
 end
 
 --TODO(glepnir): can't remove diag_t here ?
-function pd.diagnostic(diag_t)
+function M.diagnostic(diag_t)
   return {
     stl = diagnostic_info(diag_t),
     name = 'diag' .. vim.diagnostic.severity[diag_t],
@@ -229,7 +228,7 @@ function pd.diagnostic(diag_t)
   }
 end
 
-function pd.modified()
+function M.modified()
   return {
     name = 'modified',
     stl = [[%{&readonly?(&modified?'%%':'%*'):(&modified?'**':'--')}]],
@@ -237,7 +236,7 @@ function pd.modified()
   }
 end
 
-function pd.eol()
+function M.eol()
   return {
     name = 'eol',
     stl = (not uv.os_uname().sysname:find('Windows')) and ':' or '(Dos)',
@@ -245,7 +244,7 @@ function pd.eol()
   }
 end
 
-function pd.encoding()
+function M.encoding()
   local map = {
     ['utf-8'] = 'U',
     ['utf-16'] = 'U16',
@@ -261,4 +260,4 @@ function pd.encoding()
   }
 end
 
-return pd
+return M
