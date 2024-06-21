@@ -194,7 +194,7 @@ end
 
 function M.lnumcol()
   return {
-    stl = ' %P (%(%l,%c%))',
+    stl = '  %P (%(%l,%c%))',
     name = 'linecol',
   }
 end
