@@ -73,7 +73,7 @@ function M.mode()
     default = 'NOR',
     event = { 'ModeChanged' },
     attr = {
-      bg = color.fg,
+      bg = stl_bg,
       fg = 'black',
       bold = true,
     },
@@ -102,14 +102,14 @@ function M.progress()
         local val = args.data.params.value
         if val.message and val.kind ~= 'end' then
           idx = idx + 1 > #spinner and 1 or idx + 1
-          return spinner[idx - 1 > 0 and idx - 1 or 1]
+          return (' %s'):format(spinner[idx - 1 > 0 and idx - 1 or 1])
         end
       end
-      return ''
+      return ' '
     end,
     name = 'LspProgress',
     event = { 'LspProgress' },
-    attr = stl_attr('String'),
+    attr = stl_attr('Type'),
   }
 end
 
@@ -231,7 +231,7 @@ end
 function M.modified()
   return {
     name = 'modified',
-    stl = [[%{&readonly?(&modified?'%%':'%*'):(&modified?'**':'--')}]],
+    stl = [[%{&readonly?(&modified?'%%':'%*'):(&modified?'**':'--')}  ]],
     event = { 'BufModifiedSet' },
   }
 end
@@ -254,7 +254,10 @@ function M.encoding()
     ['dos'] = 'W',
   }
   return {
-    stl = map[vim.o.ff] .. (vim.o.fileencoding and map[vim.o.fileencoding] or map[vim.o.encoding]),
+    stl = (' %s%s'):format(
+      map[vim.o.ff],
+      (vim.o.fileencoding and map[vim.o.fileencoding] or map[vim.o.encoding])
+    ),
     name = 'filencode',
     event = { 'BufEnter' },
   }
