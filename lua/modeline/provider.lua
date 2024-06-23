@@ -1,4 +1,4 @@
-local api, uv, lsp, M = vim.api, vim.uv, vim.lsp, {}
+local api, uv, lsp, diagnostic, M = vim.api, vim.uv, vim.lsp, vim.diagnostic, {}
 
 local function get_stl_bg()
   local res = api.nvim_get_hl(0, { name = 'StatusLine' })
@@ -62,7 +62,6 @@ end
 
 function M.mode()
   local alias = alias_mode()
-  local color = api.nvim_get_hl(0, { name = 'PreProc' })
   return {
     stl = function()
       local mode = api.nvim_get_mode().mode
@@ -102,10 +101,10 @@ function M.progress()
         local val = args.data.params.value
         if val.message and val.kind ~= 'end' then
           idx = idx + 1 > #spinner and 1 or idx + 1
-          return (' %s'):format(spinner[idx - 1 > 0 and idx - 1 or 1])
+          return ('%s'):format(spinner[idx - 1 > 0 and idx - 1 or 1])
         end
       end
-      return ' '
+      return ''
     end,
     name = 'LspProgress',
     event = { 'LspProgress' },
@@ -194,44 +193,46 @@ end
 
 function M.lnumcol()
   return {
-    stl = '  %P (%(%l,%c%))',
+    stl = '   %P (%(%l,%c%))',
     name = 'linecol',
   }
 end
 
-local function diagnostic_info(severity)
-  return function()
-    if not vim.diagnostic.is_enabled({ bufnr = 0 }) then
+local function diagnostic_info()
+  return function(args)
+    print(vim.inspect(args))
+    if
+      not vim.diagnostic.is_enabled({ bufnr = 0 })
+      or #lsp.get_clients({ bufnr = args.buf }) == 0
+    then
       return ''
     end
-    local ns = api.nvim_get_namespaces()
-    local key = vim.iter(ns):find(function(k)
-      return k:find('diagnostic/signs')
-    end)
-    if not key then
-      return ''
+    local t = {}
+    for i = 1, 3 do
+      local count = #diagnostic.get(args.buf, { severity = i })
+      t[#t + 1] = ('%%#ModeLine%s#%s%%*'):format(vim.diagnostic.severity[i], count)
     end
-    ---@diagnostic disable-next-line: param-type-mismatch
-    local signs = vim.tbl_get(vim.diagnostic.config(), 'signs', 'text') or { 'E', 'W', 'I', 'H' }
-    local count = #vim.diagnostic.get(0, { severity = severity })
-    return count > 0 and signs[severity] .. count or ''
+    return (' Diagnostic[%s]'):format(table.concat(t, ' '))
   end
 end
 
---TODO(glepnir): can't remove diag_t here ?
-function M.diagnostic(diag_t)
+function M.diagnostic()
+  for i = 1, 3 do
+    local name = ('Diagnostic%s'):format(diagnostic.severity[i])
+    local fg = api.nvim_get_hl(0, { name = name }).fg
+    api.nvim_set_hl(0, 'ModeLine' .. diagnostic.severity[i], { fg = fg, bg = stl_bg })
+  end
   return {
-    stl = diagnostic_info(diag_t),
-    name = 'diag' .. vim.diagnostic.severity[diag_t],
-    event = { 'DiagnosticChanged', 'BufEnter' },
-    attr = stl_attr('Diagnostic' .. vim.diagnostic.severity[diag_t]),
+    stl = diagnostic_info(),
+    name = 'Diagnostic',
+    event = { 'DiagnosticChanged', 'BufEnter', 'LspAttach' },
   }
 end
 
 function M.modified()
   return {
     name = 'modified',
-    stl = [[%{&readonly?(&modified?'%%':'%*'):(&modified?'**':'--')}  ]],
+    stl = [[%{(&modified&&&readonly?'%*':(&modified?'**':(&readonly?'%%':'--')))}  ]],
     event = { 'BufModifiedSet' },
   }
 end

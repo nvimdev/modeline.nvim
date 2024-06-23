@@ -14,7 +14,6 @@ local function default()
     p.modified(),
     --
     p.fileinfo(),
-    space,
     p.lnumcol(),
     space,
     space,
@@ -24,12 +23,14 @@ local function default()
     p.gitinfo('removed'),
     space,
     '%=',
-    p.diagnostic(vim.diagnostic.severity.E),
-    p.diagnostic(vim.diagnostic.severity.W),
-    p.diagnostic(vim.diagnostic.severity.I),
-    p.diagnostic(vim.diagnostic.severity.N),
+    ' (',
+    '%{toupper(strpart(&filetype, 0, 1)) . strpart(&filetype, 1)}',
+    p.diagnostic(),
+    ')',
+    '    [',
     p.progress(),
     p.lsp(),
+    ']',
     '%=',
   }
   local e, pieces = {}, {}
