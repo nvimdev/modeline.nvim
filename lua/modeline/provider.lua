@@ -1,4 +1,9 @@
 local api, uv, lsp, diagnostic, M = vim.api, vim.uv, vim.lsp, vim.diagnostic, {}
+local fnamemodify = vim.fn.fnamemodify
+
+_G.has_lsp = function()
+  return #lsp.get_clients({ bufnr = 0 }) > 0
+end
 
 local function get_stl_bg()
   local res = api.nvim_get_hl(0, { name = 'StatusLine' })
@@ -125,18 +130,19 @@ function M.lsp()
         if not val.message or val.kind == 'end' then
           msg = ('%s:%s'):format(
             client.name,
-            client.root_dir and vim.fn.fnamemodify(client.root_dir, ':t') or 'single'
+            client.root_dir and fnamemodify(client.root_dir, ':t') or 'single'
           )
         else
-          msg = val.title
-            .. ' '
-            .. (val.message and val.message .. ' ' or '')
-            .. (val.percentage and val.percentage .. '%' or '')
+          msg = ('%s %s%s'):format(
+            val.title,
+            (val.message and val.message .. ' ' or ''),
+            (val.percentage and val.percentage .. '%' or '')
+          )
         end
       elseif args.event == 'BufEnter' then
         msg = ('%s:%s'):format(
           client.name,
-          client.root_dir and vim.fn.fnamemodify(client.root_dir, ':t') or 'single'
+          client.root_dir and fnamemodify(client.root_dir, ':t') or 'single'
         )
       elseif args.event == 'LspDetach' then
         msg = ''

@@ -23,15 +23,15 @@ local function default()
     p.gitinfo('removed'),
     space,
     '%=',
-    ' (',
+    [[ %{!empty(bufname()) ? '(' : ''}]],
     '%{toupper(strpart(&filetype, 0, 1)) . strpart(&filetype, 1)}',
     p.diagnostic(),
-    ')',
-    '    [',
+    [[%{!empty(bufname()) ? ')' : ''}]],
+    [[    %{v:lua.has_lsp() ? '[' : ''}]],
     p.progress(),
     p.lsp(),
-    ']',
-    '%=',
+    [[%{v:lua.has_lsp() ? ']' : ''}]],
+    '%=%=',
   }
   local e, pieces = {}, {}
   iter(ipairs(comps))
