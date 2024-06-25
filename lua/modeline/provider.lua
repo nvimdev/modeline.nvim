@@ -120,7 +120,7 @@ end
 function M.lsp()
   return {
     stl = function(args)
-      local client = lsp.get_clients({ bufnr = args.buf })[1]
+      local client = lsp.get_clients({ bufnr = 0 })[1]
       if not client then
         return ''
       end
@@ -205,17 +205,13 @@ function M.lnumcol()
 end
 
 local function diagnostic_info()
-  return function(args)
-    print(vim.inspect(args))
-    if
-      not vim.diagnostic.is_enabled({ bufnr = 0 })
-      or #lsp.get_clients({ bufnr = args.buf }) == 0
-    then
+  return function()
+    if not vim.diagnostic.is_enabled({ bufnr = 0 }) or #lsp.get_clients({ bufnr = 0 }) == 0 then
       return ''
     end
     local t = {}
     for i = 1, 3 do
-      local count = #diagnostic.get(args.buf, { severity = i })
+      local count = #diagnostic.get(0, { severity = i })
       t[#t + 1] = ('%%#ModeLine%s#%s%%*'):format(vim.diagnostic.severity[i], count)
     end
     return (' Diagnostic[%s]'):format(table.concat(t, ' '))
