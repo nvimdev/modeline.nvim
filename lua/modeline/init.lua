@@ -11,26 +11,18 @@ local function default()
     p.mode(),
     p.encoding(),
     p.eol(),
-    p.modified(),
-    --
+    [[%{(&modified&&&readonly?'%*':(&modified?'**':(&readonly?'%%':'--')))}  ]],
     p.fileinfo(),
-    p.lnumcol(),
-    space,
-    space,
-    p.gitinfo('head'),
-    p.gitinfo('added'),
-    p.gitinfo('changed'),
-    p.gitinfo('removed'),
+    '   %P (%(%l,%c%))  ',
+    p.gitinfo(),
     space,
     '%=',
     [[ %{!empty(bufname()) ? '(' : ''}]],
     '%{toupper(strpart(&filetype, 0, 1)) . strpart(&filetype, 1)}',
     p.diagnostic(),
     [[%{!empty(bufname()) ? ')' : ''}]],
-    [[    %{v:lua.has_lsp() ? '[' : ''}]],
     p.progress(),
     p.lsp(),
-    [[%{v:lua.has_lsp() ? ']' : ''}]],
     '%=%=',
   }
   local e, pieces = {}, {}
@@ -60,7 +52,12 @@ local function render(comps, events, pieces)
     while true do
       local event = args.event == 'User' and ('%s %s'):format(args.event, args.match) or args.event
       for _, idx in ipairs(events[event]) do
-        pieces[idx] = stl_format(comps[idx].name, comps[idx].stl(args))
+        if comps[idx].async then
+          local child = comps[idx].stl()
+          coroutine.resume(child, pieces, idx)
+        else
+          pieces[idx] = stl_format(comps[idx].name, comps[idx].stl(args))
+        end
       end
       vim.opt.stl = table.concat(pieces)
       args = co.yield()

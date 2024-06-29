@@ -1,17 +1,8 @@
 local api, uv, lsp, diagnostic, M = vim.api, vim.uv, vim.lsp, vim.diagnostic, {}
 local fnamemodify = vim.fn.fnamemodify
 
-_G.has_lsp = function()
-  return #lsp.get_clients({ bufnr = 0 }) > 0
-end
-
 local function get_stl_bg()
-  local res = api.nvim_get_hl(0, { name = 'StatusLine' })
-  if vim.tbl_isempty(res) then
-    vim.notify('[WhiskyLine:] colorscheme missing StatusLine config')
-    return
-  end
-  return res.bg
+  return api.nvim_get_hl(0, { name = 'StatusLine' }).bg or 'back'
 end
 
 local stl_bg = get_stl_bg()
@@ -21,6 +12,10 @@ local function stl_attr(group)
     bg = stl_bg,
     fg = color.fg,
   }
+end
+
+local function group_fmt(prefix, name, val)
+  return ('%%#ModeLine%s%s#%s%%*'):format(prefix, name, val)
 end
 
 local function alias_mode()
@@ -128,7 +123,7 @@ function M.lsp()
       if args.data and args.data.params then
         local val = args.data.params.value
         if not val.message or val.kind == 'end' then
-          msg = ('%s:%s'):format(
+          msg = ('[%s:%s]'):format(
             client.name,
             client.root_dir and fnamemodify(client.root_dir, ':t') or 'single'
           )
@@ -140,67 +135,59 @@ function M.lsp()
           )
         end
       elseif args.event == 'BufEnter' then
-        msg = ('%s:%s'):format(
+        msg = ('[%s:%s]'):format(
           client.name,
           client.root_dir and fnamemodify(client.root_dir, ':t') or 'single'
         )
       elseif args.event == 'LspDetach' then
         msg = ''
       end
-      return '%-20s' .. msg
+      return '   %-20s' .. msg
     end,
     name = 'Lsp',
     event = { 'LspProgress', 'LspAttach', 'LspDetach', 'BufEnter' },
   }
 end
 
-local function gitsigns_data(git_t)
-  local signs = {
-    ['added'] = '+',
-    ['changed'] = '~',
-    ['removed'] = '-',
-    ['head'] = '',
-  }
-  return function(args)
-    local ok, dict = pcall(api.nvim_buf_get_var, args.buf, 'gitsigns_status_dict')
-    if
-      not ok
-      or vim.tbl_isempty(dict)
-      or not dict[git_t]
-      or (type(dict[git_t]) == 'number' and dict[git_t] <= 0)
-    then
-      return ''
-    end
-    if git_t == 'head' and dict[git_t] == '' then
-      local obj = vim
-        .system({ 'git', 'config', '--get', 'init.defaultBranch' }, { text = true })
-        :wait()
-      if #obj.stdout > 0 then
-        dict[git_t] = vim.trim(obj.stdout)
-      end
-    end
-    return ('%s%s%s'):format(signs[git_t], dict[git_t], ' ')
+function M.gitinfo()
+  local alias = { 'Head', 'Add', 'Change', 'Delete' }
+  for i = 2, 4 do
+    local fg = api.nvim_get_hl(0, { name = 'GitSigns' .. alias[i] }).fg
+    api.nvim_set_hl(0, 'ModeLineGit' .. alias[i], { fg = fg, bg = stl_bg })
   end
-end
-
-function M.gitinfo(git_t)
-  local alias = {
-    ['added'] = 'Add',
-    ['changed'] = 'Change',
-    ['removed'] = 'Delete',
-  }
   return {
-    stl = gitsigns_data(git_t),
-    name = 'git' .. git_t,
+    stl = function()
+      return coroutine.create(function(pieces, idx)
+        local signs = { '', '+', '~', '-' }
+        local order = { 'head', 'added', 'changed', 'removed' }
+
+        local ok, dict = pcall(api.nvim_buf_get_var, 0, 'gitsigns_status_dict')
+        if not ok or vim.tbl_isempty(dict) then
+          return ''
+        end
+        if dict['head'] == '' then
+          local co = coroutine.running()
+          vim.system(
+            { 'git', 'config', '--get', 'init.defaultBranch' },
+            { text = true },
+            function(result)
+              coroutine.resume(co, #result.stdout > 0 and vim.trim(result.stdout) or nil)
+            end
+          )
+          dict['head'] = coroutine.yield()
+        end
+        local parts = ''
+        for i = 1, 4 do
+          if i == 1 or (type(dict[order[i]]) == 'number' and dict[order[i]] > 0) then
+            parts = ('%s %s'):format(parts, group_fmt('Git', alias[i], signs[i] .. dict[order[i]]))
+          end
+        end
+        pieces[idx] = parts
+      end)
+    end,
+    async = true,
+    name = 'git',
     event = { 'User GitSignsUpdate', 'BufEnter' },
-    attr = git_t ~= 'head' and stl_attr('GitSigns' .. alias[git_t]) or nil,
-  }
-end
-
-function M.lnumcol()
-  return {
-    stl = '   %P (%(%l,%c%))',
-    name = 'linecol',
   }
 end
 
@@ -226,16 +213,7 @@ function M.diagnostic()
   end
   return {
     stl = diagnostic_info(),
-    name = 'Diagnostic',
     event = { 'DiagnosticChanged', 'BufEnter', 'LspAttach' },
-  }
-end
-
-function M.modified()
-  return {
-    name = 'modified',
-    stl = [[%{(&modified&&&readonly?'%*':(&modified?'**':(&readonly?'%%':'--')))}  ]],
-    event = { 'BufModifiedSet' },
   }
 end
 
