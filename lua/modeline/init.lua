@@ -6,17 +6,15 @@ local function stl_format(name, val)
 end
 
 local function default()
-  local space = ' '
   local comps = {
     p.mode(),
     p.encoding(),
     p.eol(),
     [[%{(&modified&&&readonly?'%*':(&modified?'**':(&readonly?'%%':'--')))}  ]],
     p.fileinfo(),
-    '   %P (%(%l,%c%))  ',
+    '   %P (L%l,C%c)  ',
     p.gitinfo(),
-    space,
-    '%=',
+    ' %=',
     [[ %{!empty(bufname()) ? '(' : ''}]],
     '%{toupper(strpart(&filetype, 0, 1)) . strpart(&filetype, 1)}',
     p.diagnostic(),
