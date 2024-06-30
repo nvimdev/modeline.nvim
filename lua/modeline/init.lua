@@ -12,7 +12,7 @@ local function default()
     p.eol(),
     [[%{(&modified&&&readonly?'%*':(&modified?'**':(&readonly?'%%':'--')))}  ]],
     p.fileinfo(),
-    '   %P (L%l,C%c)  ',
+    '   %P   (L%l,C%c)  ',
     p.gitinfo(),
     ' %=',
     [[ %{!empty(bufname()) ? '(' : ''}]],
