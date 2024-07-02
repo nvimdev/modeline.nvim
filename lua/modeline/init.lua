@@ -16,7 +16,7 @@ local function default()
     p.gitinfo(),
     ' %=',
     [[ %{!empty(bufname()) ? '(' : ''}]],
-    '%{toupper(strpart(&filetype, 0, 1)) . strpart(&filetype, 1)}',
+    '%{!empty(&filetype) ? toupper(strpart(&filetype, 0, 1)) . strpart(&filetype, 1) : toupper(strpart(&buftype, 0, 1)) . strpart(&buftype, 1)}',
     p.diagnostic(),
     [[%{!empty(bufname()) ? ')' : ''}]],
     p.progress(),
