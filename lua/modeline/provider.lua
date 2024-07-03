@@ -119,7 +119,7 @@ function M.lsp()
       if not client then
         return ''
       end
-      local msg = client and client.name or ''
+      local msg = ''
       if args.data and args.data.params then
         local val = args.data.params.value
         if not val.message or val.kind == 'end' then
@@ -134,7 +134,7 @@ function M.lsp()
             (val.percentage and val.percentage .. '%' or '')
           )
         end
-      elseif args.event == 'BufEnter' then
+      elseif args.event == 'BufEnter' or args.event == 'LspAttach' then
         msg = ('[%s:%s]'):format(
           client.name,
           client.root_dir and fnamemodify(client.root_dir, ':t') or 'single'
