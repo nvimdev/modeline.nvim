@@ -230,14 +230,12 @@ function M.encoding()
     ['utf-8'] = 'U',
     ['utf-16'] = 'U16',
     ['utf-32'] = 'U32',
-    ['unix'] = 'U',
-    ['linux'] = 'L',
-    ['dos'] = 'W',
   }
   return {
-    stl = (' %s%s'):format(
-      map[vim.o.ff],
-      (vim.o.fileencoding and map[vim.o.fileencoding] or map[vim.o.encoding])
+    stl = (' %s%s%s'):format(
+      vim.fn.has('gui_running') == 0 and 'U' or '',
+      map[vim.bo.encoding],
+      map[vim.bo.fileencoding]
     ),
     name = 'filencode',
     event = { 'BufEnter' },
