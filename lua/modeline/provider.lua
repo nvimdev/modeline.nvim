@@ -234,7 +234,7 @@ function M.encoding()
   return {
     stl = (' %s%s%s'):format(
       vim.fn.has('gui_running') == 0 and 'U' or '',
-      map[vim.o.encoding],
+      map[vim.o.encoding] or 'U',
       map[vim.bo.fileencoding] or 'U'
     ),
     name = 'filencode',
