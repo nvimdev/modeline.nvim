@@ -235,7 +235,7 @@ function M.encoding()
     stl = (' %s%s%s'):format(
       vim.fn.has('gui_running') == 0 and 'U' or '',
       map[vim.o.encoding],
-      map[vim.bo.fileencoding]
+      map[vim.bo.fileencoding] or 'U'
     ),
     name = 'filencode',
     event = { 'BufEnter' },
