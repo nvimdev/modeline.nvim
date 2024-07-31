@@ -10,7 +10,7 @@ local function default()
     p.mode(),
     p.encoding(),
     p.eol(),
-    [[%{(&modified&&&readonly?'%*':(&modified?'**':(&readonly?'%%':'--')))}  ]],
+    [[%{(&modified&&&readonly?'%*':(&modified?'**':(&readonly?'%%':'--')))}-T%{tabpagenr()}  ]],
     p.fileinfo(),
     '   %P   (L%l,C%c)  ',
     p.gitinfo(),
