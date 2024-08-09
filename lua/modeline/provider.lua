@@ -158,7 +158,7 @@ function M.gitinfo()
   return {
     stl = function()
       return coroutine.create(function(pieces, idx)
-        local signs = { '', '+', '~', '-' }
+        local signs = { 'Git:', '+', '~', '-' }
         local order = { 'head', 'added', 'changed', 'removed' }
 
         local ok, dict = pcall(api.nvim_buf_get_var, 0, 'gitsigns_status_dict')
