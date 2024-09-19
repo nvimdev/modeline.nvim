@@ -81,7 +81,7 @@ end
 
 function M.fileinfo()
   return {
-    stl = [[%{expand('%:t')}]],
+    stl = [[%{expand('%:~:.')}]],
     name = 'fileinfo',
     event = { 'BufEnter' },
     attr = {
@@ -201,7 +201,7 @@ local function diagnostic_info()
       local count = #diagnostic.get(0, { severity = i })
       t[#t + 1] = ('%%#ModeLine%s#%s%%*'):format(vim.diagnostic.severity[i], count)
     end
-    return (' Diagnostic[%s]'):format(table.concat(t, ' '))
+    return (' %s'):format(table.concat(t, ' '))
   end
 end
 
