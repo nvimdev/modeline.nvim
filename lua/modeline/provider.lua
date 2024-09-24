@@ -92,6 +92,22 @@ function M.fileinfo()
   }
 end
 
+function M.filetype()
+  return {
+    name = 'filetype',
+    stl = function()
+      local alias = { cpp = 'C++' }
+      local ft = api.nvim_get_option_value('filetype', { buf = 0 })
+      local up = ft:sub(1, 1):upper()
+      if #ft == 1 then
+        return up
+      end
+      return alias[ft] and alias[ft] or up .. ft:sub(2, #ft)
+    end,
+    event = { 'BufEnter' },
+  }
+end
+
 function M.progress()
   local spinner = { '⣶', '⣧', '⣏', '⡟', '⠿', '⢻', '⣹', '⣼' }
   local idx = 1
@@ -152,8 +168,8 @@ end
 function M.gitinfo()
   local alias = { 'Head', 'Add', 'Change', 'Delete' }
   for i = 2, 4 do
-    local fg = api.nvim_get_hl(0, { name = 'GitSigns' .. alias[i] }).fg
-    api.nvim_set_hl(0, 'ModeLineGit' .. alias[i], { fg = fg, bg = stl_bg })
+    local color = api.nvim_get_hl(0, { name = 'Diff' .. alias[i] })
+    api.nvim_set_hl(0, 'ModeLineGit' .. alias[i], { fg = color.bg, bg = stl_bg })
   end
   return {
     stl = function()

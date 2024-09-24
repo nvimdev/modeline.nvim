@@ -16,7 +16,7 @@ local function default()
     p.gitinfo(),
     ' %=',
     [[ %{!empty(bufname()) ? '(' : ''}]],
-    '%{!empty(&filetype) ? toupper(strpart(&filetype, 0, 1)) . strpart(&filetype, 1) : toupper(strpart(&buftype, 0, 1)) . strpart(&buftype, 1)}',
+    p.filetype(),
     p.diagnostic(),
     [[%{!empty(bufname()) ? ')' : ''}]],
     p.progress(),
@@ -84,6 +84,7 @@ return {
             end
           end)
         end,
+        desc = '[ModeLine] update',
       })
     end)
   end,
