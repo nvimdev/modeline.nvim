@@ -18,65 +18,50 @@ local function group_fmt(prefix, name, val)
   return ('%%#ModeLine%s%s#%s%%*'):format(prefix, name, val)
 end
 
-local function alias_mode()
-  return {
-    --Normal
-    ['n'] = 'Normal',
-    ['no'] = 'O-Pending',
-    ['nov'] = 'O-Pending',
-    ['noV'] = 'O-Pending',
-    ['no\x16'] = 'O-Pending',
-    ['niI'] = 'Normal',
-    ['niR'] = 'Normal',
-    ['niV'] = 'Normal',
-    ['nt'] = 'Normal',
-    ['ntT'] = 'Normal',
-    ['v'] = 'Visual',
-    ['vs'] = 'Visual',
-    ['V'] = 'V-Line',
-    ['Vs'] = 'V-Line',
-    ['\x16'] = 'V-Block',
-    ['\x16s'] = 'V-Block',
-    ['s'] = 'Select',
-    ['S'] = 'S-Line',
-    ['\x13'] = 'S-Block',
-    ['i'] = 'Insert',
-    ['ic'] = 'Insert',
-    ['ix'] = 'Insert',
-    ['R'] = 'Replace',
-    ['Rc'] = 'Replace',
-    ['Rx'] = 'Replace',
-    ['Rv'] = 'V-Replace',
-    ['Rvc'] = 'V-Replace',
-    ['Rvx'] = 'V-Replace',
-    ['c'] = 'Command',
-    ['cv'] = 'Ex',
-    ['ce'] = 'Ex',
-    ['r'] = 'Replace',
-    ['rm'] = 'More',
-    ['r?'] = 'Confirm',
-    ['!'] = 'Shell',
-    ['t'] = 'Terminal',
-  }
-end
+local alias = {
+  --Normal
+  ['n'] = 'Normal',
+  ['no'] = 'O-Pending',
+  ['nov'] = 'O-Pending',
+  ['noV'] = 'O-Pending',
+  ['no\x16'] = 'O-Pending',
+  ['niI'] = 'Normal',
+  ['niR'] = 'Normal',
+  ['niV'] = 'Normal',
+  ['nt'] = 'Normal',
+  ['ntT'] = 'Normal',
+  ['v'] = 'Visual',
+  ['vs'] = 'Visual',
+  ['V'] = 'V-Line',
+  ['Vs'] = 'V-Line',
+  ['\x16'] = 'V-Block',
+  ['\x16s'] = 'V-Block',
+  ['s'] = 'Select',
+  ['S'] = 'S-Line',
+  ['\x13'] = 'S-Block',
+  ['i'] = 'Insert',
+  ['ic'] = 'Insert',
+  ['ix'] = 'Insert',
+  ['R'] = 'Replace',
+  ['Rc'] = 'Replace',
+  ['Rx'] = 'Replace',
+  ['Rv'] = 'V-Replace',
+  ['Rvc'] = 'V-Replace',
+  ['Rvx'] = 'V-Replace',
+  ['c'] = 'Command',
+  ['cv'] = 'Ex',
+  ['ce'] = 'Ex',
+  ['r'] = 'Replace',
+  ['rm'] = 'More',
+  ['r?'] = 'Confirm',
+  ['!'] = 'Shell',
+  ['t'] = 'Terminal',
+}
 
-function M.mode()
-  local alias = alias_mode()
-  return {
-    stl = function()
-      local mode = api.nvim_get_mode().mode
-      local m = alias[mode] or alias[string.sub(mode, 1, 1)] or 'UNK'
-      return m:sub(1, 3):upper()
-    end,
-    name = 'mode',
-    default = 'NOR',
-    event = { 'ModeChanged' },
-    attr = {
-      bg = stl_bg,
-      fg = 'black',
-      bold = true,
-    },
-  }
+function _G.ml_mode()
+  local mode = api.nvim_get_mode().mode
+  local m = alias[mode] or alias[string.sub(mode, 1, 1)] or 'UNK'
+  return m:sub(1, 3):upper()
 end
 
 function M.fileinfo()

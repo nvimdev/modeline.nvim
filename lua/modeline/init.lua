@@ -7,7 +7,7 @@ end
 
 local function default()
   local comps = {
-    p.mode(),
+    [[%#ModeLineMode#%{v:lua.ml_mode()}%*]],
     p.encoding(),
     p.eol(),
     [[%{(&modified&&&readonly?'%*':(&modified?'**':(&readonly?'%%':'--')))}- T%{tabpagenr()}  ]],
