@@ -18,7 +18,7 @@ local function group_fmt(prefix, name, val)
   return ('%%#ModeLine%s%s#%s%%*'):format(prefix, name, val)
 end
 
-local alias = {
+local mode_alias = {
   --Normal
   ['n'] = 'Normal',
   ['no'] = 'O-Pending',
@@ -60,7 +60,7 @@ local alias = {
 
 function _G.ml_mode()
   local mode = api.nvim_get_mode().mode
-  local m = alias[mode] or alias[string.sub(mode, 1, 1)] or 'UNK'
+  local m = mode_alias[mode] or mode_alias[string.sub(mode, 1, 1)] or 'UNK'
   return m:sub(1, 3):upper()
 end
 
@@ -89,7 +89,7 @@ function M.filetype()
       end
       return alias[ft] and alias[ft] or up .. ft:sub(2, #ft)
     end,
-    event = { 'BufEnter' },
+    event = { 'BufEnter', 'BufNewFile' },
   }
 end
 
@@ -222,7 +222,7 @@ function M.eol()
   return {
     name = 'eol',
     stl = (not uv.os_uname().sysname:find('Windows')) and ':' or '(Dos)',
-    event = { 'BufEnter' },
+    event = { 'BufEnter', 'BufNewFile' },
   }
 end
 
@@ -239,7 +239,7 @@ function M.encoding()
       map[vim.bo.fileencoding] or 'U'
     ),
     name = 'filencode',
-    event = { 'BufEnter' },
+    event = { 'BufEnter', 'BufNewFile' },
   }
 end
 
