@@ -89,7 +89,7 @@ function M.filetype()
       end
       return alias[ft] and alias[ft] or up .. ft:sub(2, #ft)
     end,
-    event = { 'BufEnter', 'BufNewFile' },
+    event = { 'BufEnter' },
   }
 end
 
@@ -222,7 +222,7 @@ function M.eol()
   return {
     name = 'eol',
     stl = (not uv.os_uname().sysname:find('Windows')) and ':' or '(Dos)',
-    event = { 'BufEnter', 'BufNewFile' },
+    event = { 'BufEnter' },
   }
 end
 
@@ -239,7 +239,7 @@ function M.encoding()
       map[vim.bo.fileencoding] or 'U'
     ),
     name = 'filencode',
-    event = { 'BufEnter', 'BufNewFile' },
+    event = { 'BufEnter' },
   }
 end
 
