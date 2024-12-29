@@ -238,4 +238,61 @@ function M.encoding()
   }
 end
 
+---@private
+local function binary_search(tbl, line)
+  local left = 1
+  local right = #tbl
+  local mid = 0
+
+  while true do
+    mid = bit.rshift(left + right, 1)
+    if not tbl[mid] then
+      return
+    end
+
+    local range = tbl[mid].range or tbl[mid].location.range
+    if not range then
+      return
+    end
+
+    if line >= range.start.line and line <= range['end'].line then
+      return mid
+    elseif line < range.start.line then
+      right = mid - 1
+    else
+      left = mid + 1
+    end
+    if left > right then
+      return
+    end
+  end
+end
+
+function M.doucment_symbol()
+  return {
+    stl = function()
+      return coroutine.create(function(pieces, idx)
+        local params = { textDocument = lsp.util.make_text_document_params() }
+        local co = coroutine.running()
+        vim.lsp.buf_request(0, 'textDocument/documentSymbol', params, function(err, result, ctx)
+          if err or not api.nvim_buf_is_loaded(ctx.bufnr) then
+            return
+          end
+          local lnum = api.nvim_win_get_cursor(0)[1]
+          local mid = binary_search(result, lnum)
+          if not mid then
+            return
+          end
+          coroutine.resume(co, result[mid])
+        end)
+        local data = coroutine.yield()
+        pieces[idx] = (' %s '):format(data.name)
+      end)
+    end,
+    async = true,
+    name = 'DocumentSymbol',
+    event = { 'CursorHold' },
+  }
+end
+
 return M
