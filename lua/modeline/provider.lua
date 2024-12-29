@@ -5,11 +5,10 @@ local function get_stl_bg()
   return api.nvim_get_hl(0, { name = 'StatusLine' }).bg or 'back'
 end
 
-local stl_bg = get_stl_bg()
 local function stl_attr(group)
   local color = api.nvim_get_hl(0, { name = group, link = false })
   return {
-    bg = stl_bg,
+    bg = get_stl_bg(),
     fg = color.fg,
   }
 end
@@ -69,11 +68,6 @@ function M.fileinfo()
     stl = [[%{expand('%:~:.')}]],
     name = 'fileinfo',
     event = { 'BufEnter' },
-    attr = {
-      bold = true,
-      fg = 'black',
-      bg = stl_bg,
-    },
   }
 end
 
