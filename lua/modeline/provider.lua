@@ -5,6 +5,7 @@ local function get_stl_bg()
   return api.nvim_get_hl(0, { name = 'StatusLine' }).bg or 'back'
 end
 
+local stl_bg = get_stl_bg()
 local function stl_attr(group)
   local color = api.nvim_get_hl(0, { name = group, link = false })
   return {
