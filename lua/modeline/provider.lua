@@ -66,7 +66,7 @@ end
 
 function M.fileinfo()
   return {
-    stl = [[%{expand('%:~:.')}]],
+    stl = [[%t]],
     name = 'fileinfo',
     event = { 'BufEnter' },
   }
