@@ -10,7 +10,7 @@ local function default()
     -- [[%#ModeLineMode#%{v:lua.ml_mode()}%*]],
     p.encoding(),
     p.eol(),
-    [[%{(&modified&&&readonly?'%*':(&modified?'**':(&readonly?'%%':'--')))}-  T%{tabpagenr()}  ]],
+    [[%{(&modified&&&readonly?'%*':(&modified?'**':(&readonly?'%%':'--')))}  T%{tabpagenr()}  ]],
     p.fileinfo(),
     '  %P (%l,%c)    ',
     p.gitinfo(),

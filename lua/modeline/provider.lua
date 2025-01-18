@@ -111,30 +111,34 @@ end
 function M.lsp()
   return {
     stl = function(args)
-      local client = lsp.get_clients({ bufnr = 0 })[1]
-      if not client then
+      local clients = lsp.get_clients({ bufnr = 0 })
+      if #clients == 0 then
         return ''
       end
-      local msg = ''
+      local root_dir = 'single'
+      local client_names = vim
+        .iter(clients)
+        :map(function(client)
+          if client.root_dir then
+            root_dir = client.root_dir
+          end
+          return client.name
+        end)
+        :totable()
+
+      local msg = ('[%s:%s]'):format(
+        table.concat(client_names, ','),
+        root_dir ~= 'single' and fnamemodify(root_dir, ':t') or 'single'
+      )
       if args.data and args.data.params then
         local val = args.data.params.value
-        if not val.message or val.kind == 'end' then
-          msg = ('[%s:%s]'):format(
-            client.name,
-            client.root_dir and fnamemodify(client.root_dir, ':t') or 'single'
-          )
-        else
+        if val.message and val.kind ~= 'end' then
           msg = ('%s %s%s'):format(
             val.title,
             (val.message and val.message .. ' ' or ''),
             (val.percentage and val.percentage .. '%' or '')
           )
         end
-      elseif args.event == 'BufEnter' or args.event == 'LspAttach' then
-        msg = ('[%s:%s]'):format(
-          client.name,
-          client.root_dir and fnamemodify(client.root_dir, ':t') or 'single'
-        )
       elseif args.event == 'LspDetach' then
         msg = ''
       end
@@ -228,11 +232,7 @@ function M.encoding()
     ['utf-32'] = 'U32',
   }
   return {
-    stl = (' %s%s%s'):format(
-      vim.fn.has('gui_running') == 0 and 'U' or '',
-      map[vim.o.encoding] or 'U',
-      map[vim.bo.fileencoding] or 'U'
-    ),
+    stl = (' %s%s'):format(map[vim.o.encoding] or 'U', map[vim.bo.fileencoding] or 'U'),
     name = 'filencode',
     event = { 'BufEnter' },
   }
