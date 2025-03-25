@@ -1,19 +1,6 @@
 local api, uv, lsp, diagnostic, M = vim.api, vim.uv, vim.lsp, vim.diagnostic, {}
 local fnamemodify = vim.fn.fnamemodify
 
-local function get_stl_bg()
-  return api.nvim_get_hl(0, { name = 'StatusLine' }).bg or 'back'
-end
-
-local stl_bg = get_stl_bg()
-local function stl_attr(group)
-  local color = api.nvim_get_hl(0, { name = group, link = false })
-  return {
-    bg = get_stl_bg(),
-    fg = color.fg,
-  }
-end
-
 local function group_fmt(prefix, name, val)
   return ('%%#ModeLine%s%s#%s%%*'):format(prefix, name, val)
 end
@@ -104,7 +91,7 @@ function M.progress()
     end,
     name = 'LspProgress',
     event = { 'LspProgress' },
-    attr = stl_attr('Type'),
+    attr = { link = 'Type' },
   }
 end
 
@@ -153,7 +140,7 @@ function M.gitinfo()
   local alias = { 'Head', 'Add', 'Change', 'Delete' }
   for i = 2, 4 do
     local color = api.nvim_get_hl(0, { name = 'Diff' .. alias[i] })
-    api.nvim_set_hl(0, 'ModeLineGit' .. alias[i], { fg = color.bg, bg = stl_bg })
+    api.nvim_set_hl(0, 'ModeLineGit' .. alias[i], { fg = color.bg })
   end
   return {
     stl = function()
@@ -209,7 +196,7 @@ function M.diagnostic()
   for i = 1, 3 do
     local name = ('Diagnostic%s'):format(diagnostic.severity[i])
     local fg = api.nvim_get_hl(0, { name = name }).fg
-    api.nvim_set_hl(0, 'ModeLine' .. diagnostic.severity[i], { fg = fg, bg = stl_bg })
+    api.nvim_set_hl(0, 'ModeLine' .. diagnostic.severity[i], { fg = fg })
   end
   return {
     stl = diagnostic_info(),
