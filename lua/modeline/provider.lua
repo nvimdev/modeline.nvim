@@ -166,7 +166,10 @@ function M.gitinfo()
         local parts = ''
         for i = 1, 4 do
           if i == 1 or (type(dict[order[i]]) == 'number' and dict[order[i]] > 0) then
-            parts = ('%s %s'):format(parts, group_fmt('Git', alias[i], signs[i] .. dict[order[i]]))
+            parts = ('%s %s'):format(
+              parts,
+              ('%%#ModeLineGit%s#%s%%*'):format(alias[i], signs[i] .. dict[order[i]])
+            )
           end
         end
         pieces[idx] = parts
@@ -178,28 +181,20 @@ function M.gitinfo()
   }
 end
 
-local function diagnostic_info()
-  return function()
-    if not vim.diagnostic.is_enabled({ bufnr = 0 }) or #lsp.get_clients({ bufnr = 0 }) == 0 then
-      return ''
-    end
-    local t = {}
-    for i = 1, 3 do
-      local count = #diagnostic.get(0, { severity = i })
-      t[#t + 1] = ('%%#ModeLine%s#%s%%*'):format(vim.diagnostic.severity[i], count)
-    end
-    return (' %s'):format(table.concat(t, ' '))
-  end
-end
-
 function M.diagnostic()
-  for i = 1, 3 do
-    local name = ('Diagnostic%s'):format(diagnostic.severity[i])
-    local fg = api.nvim_get_hl(0, { name = name }).fg
-    api.nvim_set_hl(0, 'ModeLine' .. diagnostic.severity[i], { fg = fg })
-  end
   return {
-    stl = diagnostic_info(),
+    stl = function()
+      if not vim.diagnostic.is_enabled({ bufnr = 0 }) or #lsp.get_clients({ bufnr = 0 }) == 0 then
+        return ''
+      end
+      local t = {}
+      for i = 1, 3 do
+        local count = #diagnostic.get(0, { severity = i })
+        t[#t + 1] = ('%%#Diagnostic%s#%s%%*'):format(vim.diagnostic.severity[i], count)
+      end
+      return (' %s'):format(table.concat(t, ' '))
+    end,
+
     event = { 'DiagnosticChanged', 'BufEnter', 'LspAttach' },
   }
 end
