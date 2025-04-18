@@ -214,7 +214,7 @@ function M.encoding()
     ['utf-32'] = 'U32',
   }
   return {
-    stl = (' %s%s'):format(map[vim.o.encoding] or 'U', map[vim.bo.fileencoding] or 'U'),
+    stl = ('-%s%s'):format(map[vim.o.encoding] or 'U', map[vim.bo.fileencoding] or 'U'),
     name = 'filencode',
     event = { 'BufEnter' },
   }
