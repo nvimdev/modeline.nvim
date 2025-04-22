@@ -23,6 +23,7 @@ local function default()
     p.lsp(),
     '%=%=',
   }
+
   local e, pieces = {}, {}
   iter(ipairs(comps))
     :map(function(key, item)
