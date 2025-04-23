@@ -8,4 +8,5 @@ implement emacs default modeline on neovim.
 - Lsp progress message
 - minimalist
 
+
 # GPL v3
