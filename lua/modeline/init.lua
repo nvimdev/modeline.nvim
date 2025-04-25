@@ -12,7 +12,7 @@ local function default()
     p.eol(),
     [[%{(&modified&&&readonly?'%*':(&modified?'**':(&readonly?'%%':'--')))}  T%{tabpagenr()}  ]],
     p.fileinfo(),
-    "  %P (%l, %{printf('0x%03X',col('.'))})    ",
+    "  %P (%{printf('0x%03X, 0x%03X', line('.'), col('.'))})    ",
     p.gitinfo(),
     ' %=',
     [[%{(bufname() !=# '' && &bt != 'terminal' ? '(' : '')}]],

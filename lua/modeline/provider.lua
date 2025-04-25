@@ -1,10 +1,6 @@
 local api, uv, lsp, diagnostic, M = vim.api, vim.uv, vim.lsp, vim.diagnostic, {}
 local fnamemodify = vim.fn.fnamemodify
 
-local function group_fmt(prefix, name, val)
-  return ('%%#ModeLine%s%s#%s%%*'):format(prefix, name, val)
-end
-
 local mode_alias = {
   --Normal
   ['n'] = 'Normal',
@@ -256,7 +252,7 @@ function M.doucment_symbol()
       return coroutine.create(function(pieces, idx)
         local params = { textDocument = lsp.util.make_text_document_params() }
         local co = coroutine.running()
-        vim.lsp.buf_request(0, 'textDocument/documentSymbol', params, function(err, result, ctx)
+        lsp.buf_request(0, 'textDocument/documentSymbol', params, function(err, result, ctx)
           if err or not api.nvim_buf_is_loaded(ctx.bufnr) then
             return
           end
