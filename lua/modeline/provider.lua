@@ -102,6 +102,10 @@ function M.lsp()
       local client_names = vim
         .iter(clients)
         :map(function(client)
+          if args.event == 'LspDetach' and client.id == args.data.client_id then
+            return nil
+          end
+
           if client.root_dir then
             root_dir = client.root_dir
           end
@@ -122,8 +126,6 @@ function M.lsp()
             (val.percentage and val.percentage .. '%' or '')
           )
         end
-      elseif args.event == 'LspDetach' then
-        msg = ''
       end
       return '   %-20s' .. msg
     end,
