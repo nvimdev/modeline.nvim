@@ -47,30 +47,6 @@ function _G.ml_mode()
   return m:sub(1, 3):upper()
 end
 
-function M.fileinfo()
-  return {
-    stl = [[%t]],
-    name = 'fileinfo',
-    event = { 'BufEnter' },
-  }
-end
-
-function M.filetype()
-  return {
-    name = 'filetype',
-    stl = function()
-      local alias = { cpp = 'C++' }
-      local ft = api.nvim_get_option_value('filetype', { buf = 0 })
-      local up = ft:sub(1, 1):upper()
-      if #ft == 1 then
-        return up
-      end
-      return alias[ft] and alias[ft] or up .. ft:sub(2, #ft)
-    end,
-    event = { 'BufEnter' },
-  }
-end
-
 function M.progress()
   local spinner = { '⣶', '⣧', '⣏', '⡟', '⠿', '⢻', '⣹', '⣼' }
   local idx = 1
