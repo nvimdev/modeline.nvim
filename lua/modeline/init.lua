@@ -51,12 +51,16 @@ local function render(comps, events, pieces)
     while true do
       local event = args.event == 'User' and ('%s %s'):format(args.event, args.match) or args.event
       for _, idx in ipairs(events[event]) do
+        if comps[idx].cond and comps[idx].cond() == false then
+          goto continue
+        end
         if comps[idx].async then
           local child = comps[idx].stl()
           coroutine.resume(child, pieces, idx)
         else
           pieces[idx] = stl_format(comps[idx].name, comps[idx].stl(args))
         end
+        ::continue::
       end
       vim.opt.stl = table.concat(pieces)
       args = co.yield()

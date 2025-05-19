@@ -168,8 +168,10 @@ function M.diagnostic()
       end
       return (' %s'):format(table.concat(t, ' '))
     end,
-
-    event = { 'DiagnosticChanged', 'BufEnter', 'LspAttach' },
+    cond = function()
+      return tonumber(vim.fn.pumvisible()) == 0
+    end,
+    event = { 'DiagnosticChanged', 'BufEnter', 'LspAttach', 'LspDetach', 'InsertLeave' },
   }
 end
 
