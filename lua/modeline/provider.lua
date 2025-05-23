@@ -164,9 +164,12 @@ function M.diagnostic()
       local t = {}
       for i = 1, 3 do
         local count = #diagnostic.get(0, { severity = i })
-        t[#t + 1] = ('%%#Diagnostic%s#%s%%*'):format(vim.diagnostic.severity[i], count)
+        t[#t + 1] = ('%%#Diagnostic%s#%s%%*'):format(
+          vim.diagnostic.severity[i],
+          count > 0 and count or '✶'
+        )
       end
-      return (' %s'):format(table.concat(t, ' '))
+      return (' %s'):format(table.concat(t, '─'))
     end,
     cond = function()
       return tonumber(vim.fn.pumvisible()) == 0
