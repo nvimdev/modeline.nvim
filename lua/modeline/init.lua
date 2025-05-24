@@ -8,9 +8,10 @@ end
 local function default()
   local comps = {
     -- [[%#ModeLineMode#%{v:lua.ml_mode()}%*]],
-    p.encoding(),
-    p.eol(),
-    [[%{(&modified&&&readonly?'%*':(&modified?'**':(&readonly?'%%':'--')))}  T%{tabpagenr()}  ]],
+    " %{&fileencoding=='utf-8'||&fileencoding==''?'U':&fileencoding=='latin1'?'1':'-'}",
+    "%{&fileformat=='dos'?'\\\\':&fileformat=='mac'?'/':':'}",
+    "%{&readonly?(&modified?'%*':'%%'):(&modified?'**':'--')}-",
+    '  T%{tabpagenr()} ',
     '%#ModeLineMode#%t%*', -- file name
     "  %P (%{printf('0x%03X, 0x%03X', line('.'), col('.'))})    ",
     p.gitinfo(),

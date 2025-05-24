@@ -178,27 +178,6 @@ function M.diagnostic()
   }
 end
 
-function M.eol()
-  return {
-    name = 'eol',
-    stl = (not uv.os_uname().sysname:find('Windows')) and ':' or '(Dos)',
-    event = { 'BufEnter' },
-  }
-end
-
-function M.encoding()
-  local map = {
-    ['utf-8'] = 'U',
-    ['utf-16'] = 'U16',
-    ['utf-32'] = 'U32',
-  }
-  return {
-    stl = ('-%s%s'):format(map[vim.o.encoding] or 'U', map[vim.bo.fileencoding] or 'U'),
-    name = 'filencode',
-    event = { 'BufEnter' },
-  }
-end
-
 ---@private
 local function binary_search(tbl, line)
   local left = 1
