@@ -90,8 +90,8 @@ function M.lsp()
         :totable()
 
       local msg = ('[%s:%s]'):format(
-        table.concat(client_names, ','),
-        root_dir ~= 'single' and fnamemodify(root_dir, ':t') or 'single'
+        root_dir ~= 'single' and fnamemodify(root_dir, ':t') or 'single',
+        table.concat(client_names, ',')
       )
       if args.data and args.data.params then
         local val = args.data.params.value
@@ -164,12 +164,9 @@ function M.diagnostic()
       local t = {}
       for i = 1, 3 do
         local count = #diagnostic.get(0, { severity = i })
-        t[#t + 1] = ('%%#Diagnostic%s#%s%%*'):format(
-          vim.diagnostic.severity[i],
-          count > 0 and count or '✶'
-        )
+        t[#t + 1] = ('%%#Diagnostic%s#%s%%*'):format(vim.diagnostic.severity[i], count)
       end
-      return (' %s'):format(table.concat(t, '─'))
+      return (' [%s]'):format(table.concat(t, ' '))
     end,
     cond = function()
       return tonumber(vim.fn.pumvisible()) == 0
