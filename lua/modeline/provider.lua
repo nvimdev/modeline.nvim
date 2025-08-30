@@ -1,4 +1,4 @@
-local api, uv, lsp, diagnostic, M = vim.api, vim.uv, vim.lsp, vim.diagnostic, {}
+local api, lsp, diagnostic, M = vim.api, vim.lsp, vim.diagnostic, {}
 local fnamemodify = vim.fn.fnamemodify
 
 local mode_alias = {
@@ -96,11 +96,7 @@ function M.lsp()
       if args.data and args.data.params then
         local val = args.data.params.value
         if val.message and val.kind ~= 'end' then
-          msg = ('%s %s%s'):format(
-            val.title,
-            (val.message and val.message .. ' ' or ''),
-            (val.percentage and val.percentage .. '%' or '')
-          )
+          msg = ('%s %s'):format(val.title, (val.percentage and val.percentage .. '%' or ''))
         end
       end
       return '   %-20s' .. msg

@@ -64,6 +64,7 @@ local function render(comps, events, pieces)
         end
         ::continue::
       end
+      -- print(vim.inspect(pieces))
       vim.opt.stl = table.concat(pieces)
       args = co.yield()
     end
