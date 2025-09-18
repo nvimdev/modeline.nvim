@@ -85,7 +85,7 @@ function M.lsp()
           if client.root_dir then
             root_dir = client.root_dir
           end
-          return client.name
+          return ('%d_%s'):format(client.id, client.name)
         end)
         :totable()
 
