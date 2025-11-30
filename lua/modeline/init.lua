@@ -14,7 +14,7 @@ local function default()
     "%{&readonly?(&modified?'%*':'%%'):(&modified?'**':'--')}-",
     '  T%{tabpagenr()} ',
     '%#ModeLineMode#%t%*', -- file name
-    "  %P %{printf('L%-5d ', line('.'))}%{printf('C%-4d', col('.'))}    ",
+    "  %P  %{printf('L%-5d', line('.'))}    ",
     p.gitinfo(),
     ' %=',
     [[%{(bufname() !=# '' && &bt != 'terminal' ? '(' : '')}]],
