@@ -167,7 +167,7 @@ function M.diagnostic()
     cond = function()
       return tonumber(vim.fn.pumvisible()) == 0
     end,
-    event = { 'DiagnosticChanged', 'BufEnter', 'LspAttach', 'LspDetach', 'InsertLeave' },
+    event = { 'DiagnosticChanged', 'BufEnter', 'LspAttach', 'LspDetach' },
   }
 end
 
