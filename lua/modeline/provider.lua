@@ -107,7 +107,7 @@ function M.lsp()
 end
 
 function M.gitinfo()
-  local alias = { 'Head', 'Add', 'Change', 'Delete' }
+  local alias = { 'Head', 'plus', 'minus', 'delta' }
   return {
     stl = function()
       return coroutine.create(function(pieces, idx)
@@ -134,7 +134,7 @@ function M.gitinfo()
           if i == 1 or (type(dict[order[i]]) == 'number' and dict[order[i]] > 0) then
             parts = ('%s %s'):format(
               parts,
-              ('%%#Diff%s#%s%%*'):format(alias[i], signs[i] .. dict[order[i]])
+              ('%%#@diff.%s#%s%%*'):format(alias[i], signs[i] .. dict[order[i]])
             )
           end
         end
