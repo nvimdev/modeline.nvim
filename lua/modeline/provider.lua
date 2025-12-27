@@ -108,10 +108,6 @@ end
 
 function M.gitinfo()
   local alias = { 'Head', 'Add', 'Change', 'Delete' }
-  for i = 2, 4 do
-    local color = api.nvim_get_hl(0, { name = 'Diff' .. alias[i] })
-    api.nvim_set_hl(0, 'ModeLineGit' .. alias[i], { fg = color.bg })
-  end
   return {
     stl = function()
       return coroutine.create(function(pieces, idx)
@@ -138,7 +134,7 @@ function M.gitinfo()
           if i == 1 or (type(dict[order[i]]) == 'number' and dict[order[i]] > 0) then
             parts = ('%s %s'):format(
               parts,
-              ('%%#ModeLineGit%s#%s%%*'):format(alias[i], signs[i] .. dict[order[i]])
+              ('%%#Diff%s#%s%%*'):format(alias[i], signs[i] .. dict[order[i]])
             )
           end
         end
