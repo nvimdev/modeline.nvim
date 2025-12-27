@@ -2,9 +2,6 @@ local co, api, iter = coroutine, vim.api, vim.iter
 local p, hl = require('modeline.provider'), api.nvim_set_hl
 
 local function stl_format(name, val)
-  if not name then
-    return
-  end
   return ('%%#ModeLine%s#%s%%*'):format(name, val)
 end
 
@@ -33,10 +30,9 @@ local function default()
     :map(function(key, item)
       if type(item) == 'string' then
         pieces[#pieces + 1] = item
-      elseif type(item.stl) == 'string' then
-        pieces[#pieces + 1] = stl_format(item.name, item.stl)
       else
-        pieces[#pieces + 1] = item.default and stl_format(item.name, item.default) or ''
+        pieces[#pieces + 1] = item.default and item.name and stl_format(item.name, item.default)
+          or ''
         for _, event in ipairs({ unpack(item.event or {}) }) do
           e[event] = e[event] or {}
           e[event][#e[event] + 1] = key
