@@ -2,6 +2,9 @@ local co, api, iter = coroutine, vim.api, vim.iter
 local p, hl = require('modeline.provider'), api.nvim_set_hl
 
 local function stl_format(name, val)
+  if not name then
+    return
+  end
   return ('%%#ModeLine%s#%s%%*'):format(name, val)
 end
 
