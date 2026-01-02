@@ -12,7 +12,7 @@ local function default()
     "%{&encoding=='utf-8'?'U':''}",
     "%{&fileformat=='dos'?'\\\\':&fileformat=='mac'?'/':':'}",
     "%{&readonly?(&modified?'%*':'%%'):(&modified?'**':'--')}-",
-    '  T%{tabpagenr()} %t',
+    '  T%{tabpagenr()} %#StatusLineFile#%t%*',
     "  %P  %{printf('L%-5d', line('.'))}    ",
     p.gitinfo(),
     ' %=',
