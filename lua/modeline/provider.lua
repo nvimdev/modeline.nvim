@@ -1,4 +1,4 @@
-local api, lsp, M = vim.api, vim.lsp, {}
+local api, lsp, diagnostic, M = vim.api, vim.lsp, vim.diagnostic, {}
 local fnamemodify = vim.fn.fnamemodify
 
 local mode_alias = {
@@ -144,6 +144,26 @@ function M.gitinfo()
     async = true,
     name = 'git',
     event = { 'User GitSignsUpdate', 'BufEnter' },
+  }
+end
+
+function M.diagnostic()
+  return {
+    stl = function()
+      if not vim.diagnostic.is_enabled({ bufnr = 0 }) or #lsp.get_clients({ bufnr = 0 }) == 0 then
+        return ''
+      end
+      local t = {}
+      for i = 1, 3 do
+        local count = #diagnostic.get(0, { severity = i })
+        t[#t + 1] = ('%%#Diagnostic%s#%s%%*'):format(vim.diagnostic.severity[i], count)
+      end
+      return (' [%s]'):format(table.concat(t, ' '))
+    end,
+    cond = function()
+      return tonumber(vim.fn.pumvisible()) == 0
+    end,
+    event = { 'DiagnosticChanged', 'BufEnter', 'LspAttach', 'LspDetach' },
   }
 end
 
