@@ -70,7 +70,7 @@ end
 function M.lsp()
   return {
     stl = function(args)
-      local clients = lsp.get_clients({ bufnr = 0 })
+      local clients = lsp.get_clients({ bufnr = args.buf })
       if #clients == 0 then
         return ''
       end
