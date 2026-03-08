@@ -70,6 +70,9 @@ end
 function M.lsp()
   return {
     stl = function(args)
+      if vim.o.laststatus ~= 3 and vim.fn.bufwinid(args.buf) ~= api.nvim_get_current_win() then
+        return
+      end
       local clients = lsp.get_clients({ bufnr = args.buf })
       if #clients == 0 then
         return ''
