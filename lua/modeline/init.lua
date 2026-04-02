@@ -13,7 +13,7 @@ local function default()
     "%{&fileformat=='dos'?'\\\\':&fileformat=='mac'?'/':':'}",
     "%{&readonly?(&modified?'%*':'%%'):(&modified?'**':'--')}-",
     '  T%{tabpagenr()} %#ModeLineFileName#%t%*',
-    "  %P  %{printf('L%-5d', line('.'))}    ",
+    "  %P  %{printf('L%-5dC%-5d', line('.'), col('.'))}    ",
     p.gitinfo(),
     ' %=',
     [[%{(bufname() !=# '' && &bt != 'terminal' ? '(' : '')}]],
