@@ -1,7 +1,6 @@
 if vim.g.loaded_modeline then
   return
 end
-vim.g.loaded_modeline = true
 
 vim.g.loaded_modeline = true
 
