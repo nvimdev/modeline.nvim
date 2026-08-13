@@ -102,7 +102,7 @@ function M.lsp()
           msg = ('%s %s'):format(val.title, (val.percentage and val.percentage .. '%' or ''))
         end
       end
-      return '   %-20s' .. msg
+      return ('   %-20s'):format(msg)
     end,
     name = 'Lsp',
     event = { 'LspProgress', 'LspAttach', 'LspDetach', 'BufEnter' },
