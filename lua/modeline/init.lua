@@ -1,5 +1,6 @@
 local co, api, iter = coroutine, vim.api, vim.iter
 local p, hl = require('modeline.provider'), api.nvim_set_hl
+local did_setup = false
 
 local function stl_format(name, val)
   return ('%%#ModeLine%s#%s%%*'):format(name, val)
@@ -70,6 +71,10 @@ end
 
 return {
   setup = function()
+    if did_setup then
+      return
+    end
+    did_setup = true
     local comps, events, pieces = default()
     local stl_render = render(comps, events, pieces)
     iter(vim.tbl_keys(events)):map(function(e)
