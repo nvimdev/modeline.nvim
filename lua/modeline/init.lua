@@ -1,6 +1,28 @@
 local co, api, iter = coroutine, vim.api, vim.iter
 local p, hl = require('modeline.provider'), api.nvim_set_hl
 local did_setup = false
+local coding_alias = {
+  ['utf-8'] = 'U',
+  ['utf8'] = 'U',
+  ['latin1'] = '1',
+  ['iso-8859-1'] = '1',
+}
+
+local function coding_mnemonic(encoding)
+  return coding_alias[(encoding or ''):lower()] or '-'
+end
+
+_G.modeline = _G.modeline or {}
+
+function _G.modeline.coding_system()
+  local fenc = vim.bo.fileencoding
+  local enc = vim.o.encoding
+  local ff = vim.bo.fileformat
+  local file_mnemonic = coding_mnemonic(fenc ~= '' and fenc or enc)
+  local process_mnemonic = coding_mnemonic(enc)
+  local eol = ff == 'dos' and '\\' or ff == 'mac' and '/' or ':'
+  return file_mnemonic .. process_mnemonic .. eol
+end
 
 local function stl_format(name, val)
   return ('%%#ModeLine%s#%s%%*'):format(name, val)
@@ -9,9 +31,7 @@ end
 local function default()
   local comps = {
     -- [[%#ModeLineMode#%{v:lua.ml_mode()}%*]],
-    " %{&fileencoding=='utf-8'||&fileencoding==''?'U':&fileencoding=='latin1'?'1':'-'}",
-    "%{&encoding=='utf-8'?'U':''}",
-    "%{&fileformat=='dos'?'\\\\':&fileformat=='mac'?'/':':'}",
+    ' %{v:lua.modeline.coding_system()}',
     "%{&readonly?(&modified?'%*':'%%'):(&modified?'**':'--')}-",
     '  T%{tabpagenr()} %#ModeLineFileName#%t%*',
     "  %P  %{printf('L%-5dC%-5d', line('.'), col('.'))}    ",
