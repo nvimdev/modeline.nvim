@@ -1,5 +1,11 @@
-local api, lsp, diagnostic, M = vim.api, vim.lsp, vim.diagnostic, {}
+local api, lsp, diagnostic = vim.api, vim.lsp, vim.diagnostic
 local fnamemodify = vim.fn.fnamemodify
+local M = {}
+
+local function esc(s)
+  return (tostring(s):gsub('%%', '%%%%'))
+end
+M.escape = esc
 
 local mode_alias = {
   --Normal
@@ -43,106 +49,219 @@ local mode_alias = {
 
 function _G.ml_mode()
   local mode = api.nvim_get_mode().mode
-  local m = mode_alias[mode] or mode_alias[string.sub(mode, 1, 1)] or 'UNK'
+  local m = mode_alias[mode] or mode_alias[mode:sub(1, 1)] or 'UNK'
   return m:sub(1, 3):upper()
+end
+
+local progress = { clients = {}, seen = nil }
+
+local function latest_token(st)
+  for token, text in pairs(st.texts) do
+    if text then
+      return token
+    end
+  end
+end
+
+local function track(args)
+  if not args or args == progress.seen then
+    return
+  end
+  progress.seen = args
+  local data = args.data or {}
+  local cid = data.client_id
+  if cid == nil then
+    return
+  end
+
+  if args.event == 'LspDetach' then
+    local client = lsp.get_client_by_id(cid)
+    if
+      not client
+      or client.is_stopped(client)
+      or vim.tbl_count(client.attached_buffers or {}) <= 1
+    then
+      progress.clients[cid] = nil
+    end
+    return
+  end
+  if args.event ~= 'LspProgress' then
+    return
+  end
+
+  local params = data.params
+  local val = params and params.value
+  local token = params and params.token
+  if type(val) ~= 'table' or token == nil then
+    return
+  end
+
+  local st = progress.clients[cid]
+  if not st then
+    st = { titles = {}, texts = {} }
+    progress.clients[cid] = st
+  end
+
+  if val.kind == 'end' then
+    st.titles[token], st.texts[token] = nil, nil
+    if st.latest == token then
+      st.latest = latest_token(st)
+    end
+    if next(st.texts) == nil then
+      progress.clients[cid] = nil
+    end
+    return
+  end
+
+  st.titles[token] = val.title or st.titles[token]
+  local title = st.titles[token]
+  local text = false
+  if title then
+    text = type(val.percentage) == 'number'
+        and ('%s %d%%'):format(title, math.floor(val.percentage))
+      or title
+    st.latest = token
+  end
+  st.texts[token] = text
+end
+
+local function progress_busy()
+  return next(progress.clients) ~= nil
+end
+
+local function progress_text(cid)
+  local st = progress.clients[cid]
+  return st and st.latest and st.texts[st.latest] or nil
 end
 
 function M.progress()
   local spinner = { '⣶', '⣧', '⣏', '⡟', '⠿', '⢻', '⣹', '⣼' }
-  local idx = 1
+  local idx = 0
   return {
-    stl = function(args)
-      if args.data and args.data.params then
-        local val = args.data.params.value
-        if val.message and val.kind ~= 'end' then
-          idx = idx + 1 > #spinner and 1 or idx + 1
-          return ('%s'):format(spinner[idx - 1 > 0 and idx - 1 or 1])
-        end
+    stl = function(_, args)
+      if not args then
+        return
       end
-      return ''
+      if not progress_busy() then
+        return ''
+      end
+      if args.event == 'LspProgress' then
+        idx = idx % #spinner + 1
+      end
+      return spinner[math.max(idx, 1)]
     end,
+    prepare = track,
+    global = true,
     name = 'LspProgress',
-    event = { 'LspProgress' },
+    event = { 'LspProgress', 'LspDetach' },
     attr = { link = 'Type' },
   }
 end
 
 function M.lsp()
   return {
-    stl = function(args)
-      if vim.o.laststatus ~= 3 and vim.fn.bufwinid(args.buf) ~= api.nvim_get_current_win() then
-        return
-      end
-      local clients = lsp.get_clients({ bufnr = args.buf })
-      if #clients == 0 then
-        return ''
-      end
-      local root_dir = 'single'
-      local client_names = vim
-        .iter(clients)
-        :map(function(client)
-          if args.event == 'LspDetach' and client.id == args.data.client_id then
-            return nil
-          end
+    stl = function(buf, args)
+      local data = args and args.data or {}
+      local detaching = args and args.event == 'LspDetach' and args.buf == buf and data.client_id
+        or nil
 
-          if client.root_dir then
-            root_dir = client.root_dir
-          end
-          return ('%d_%s'):format(client.id, client.name)
-        end)
-        :totable()
-
-      local msg = ('[%s:%s]'):format(
-        root_dir ~= 'single' and fnamemodify(root_dir, ':t') or 'single',
-        table.concat(client_names, ',')
-      )
-      if args.data and args.data.params then
-        local val = args.data.params.value
-        if val.message and val.kind ~= 'end' then
-          msg = ('%s %s'):format(val.title, (val.percentage and val.percentage .. '%' or ''))
+      local names, root, msg = {}, nil, nil
+      for _, client in ipairs(lsp.get_clients({ bufnr = buf })) do
+        if client.id ~= detaching then
+          root = client.root_dir or root
+          names[#names + 1] = ('%d_%s'):format(client.id, client.name)
+          msg = msg or progress_text(client.id)
         end
       end
-      return '   %-20s' .. msg
+      if #names == 0 then
+        return ''
+      end
+      msg = msg
+        or ('[%s:%s]'):format(
+          root and fnamemodify(root, ':t') or 'single',
+          table.concat(names, ',')
+        )
+      return '   ' .. esc(msg)
+    end,
+    prepare = track,
+    targets = function(args)
+      if args.event ~= 'LspProgress' then
+        return { args.buf }
+      end
+      local client = args.data and lsp.get_client_by_id(args.data.client_id)
+      return client and vim.tbl_keys(client.attached_buffers or {}) or {}
     end,
     name = 'Lsp',
-    event = { 'LspProgress', 'LspAttach', 'LspDetach', 'BufEnter' },
+    event = { 'LspProgress', 'LspAttach', 'LspDetach' },
   }
 end
 
 function M.gitinfo()
-  local alias = { 'Head', 'plus', 'minus', 'delta' }
-  return {
-    stl = function()
-      return coroutine.create(function(pieces, idx)
-        local signs = { 'Git:', '+', '~', '-' }
-        local order = { 'head', 'added', 'changed', 'removed' }
+  local alias = { 'Head', 'plus', 'delta', 'minus' }
+  local signs = { 'Git:', '+', '~', '-' }
+  local order = { 'head', 'added', 'changed', 'removed' }
 
-        local ok, dict = pcall(api.nvim_buf_get_var, 0, 'gitsigns_status_dict')
-        if not ok or vim.tbl_isempty(dict) then
-          return ''
-        end
-        if dict['head'] == '' then
-          local co = coroutine.running()
-          vim.system(
-            { 'git', 'config', '--get', 'init.defaultBranch' },
-            { text = true },
-            function(result)
-              coroutine.resume(co, #result.stdout > 0 and vim.trim(result.stdout) or nil)
-            end
-          )
-          dict['head'] = coroutine.yield()
-        end
-        local parts = ''
-        for i = 1, 4 do
-          if i == 1 or (type(dict[order[i]]) == 'number' and dict[order[i]] > 0) then
-            parts = ('%s %s'):format(
-              parts,
-              ('%%#@diff.%s#%s%%*'):format(alias[i], signs[i] .. dict[order[i]])
-            )
-          end
-        end
-        pieces[idx] = parts
-      end)
+  local default_branch
+  local waiters = {}
+
+  local function with_default_branch(cb)
+    if default_branch ~= nil then
+      return cb(default_branch or nil)
+    end
+    waiters[#waiters + 1] = cb
+    if #waiters > 1 then
+      return
+    end
+    local function finish(branch)
+      default_branch = branch or false
+      local list = waiters
+      waiters = {}
+      for _, f in ipairs(list) do
+        f(branch)
+      end
+    end
+    local ok = pcall(
+      vim.system,
+      { 'git', 'config', '--get', 'init.defaultBranch' },
+      { text = true },
+      function(res)
+        local out = res.code == 0 and vim.trim(res.stdout or '') or ''
+        vim.schedule(function()
+          finish(out ~= '' and out or nil)
+        end)
+      end
+    )
+    if not ok then
+      finish(nil)
+    end
+  end
+
+  local function format_git(dict, head)
+    local parts = {}
+    for i = 1, 4 do
+      local v = i == 1 and esc(head) or dict[order[i]]
+      if i == 1 or (type(v) == 'number' and v > 0) then
+        parts[#parts + 1] = ('%%#@diff.%s#%s%s%%*'):format(alias[i], signs[i], v)
+      end
+    end
+    return ' ' .. table.concat(parts, ' ')
+  end
+
+  return {
+    stl = function(buf, _, done, guard)
+      local dict = vim.b[buf].gitsigns_status_dict
+      if type(dict) ~= 'table' or next(dict) == nil then
+        return done('')
+      end
+      if dict.head and dict.head ~= '' then
+        return done(format_git(dict, dict.head))
+      end
+      with_default_branch(guard(function(branch)
+        done(format_git(dict, branch or ''))
+      end))
+    end,
+    targets = function(args)
+      return { args.data and args.data.buffer or args.buf }
     end,
     async = true,
     name = 'git',
@@ -151,80 +270,104 @@ function M.gitinfo()
 end
 
 function M.diagnostic()
+  local names = { 'Error', 'Warn', 'Info' }
   return {
-    stl = function()
-      if not vim.diagnostic.is_enabled({ bufnr = 0 }) or #lsp.get_clients({ bufnr = 0 }) == 0 then
+    stl = function(buf, args)
+      local detaching = args and args.event == 'LspDetach' and args.data and args.data.client_id
+      local has_client = false
+      for _, client in ipairs(lsp.get_clients({ bufnr = buf })) do
+        if client.id ~= detaching then
+          has_client = true
+          break
+        end
+      end
+      if not has_client or not diagnostic.is_enabled({ bufnr = buf }) then
         return ''
       end
+      local counts = diagnostic.count(buf)
       local t = {}
       for i = 1, 3 do
-        local count = #diagnostic.get(0, { severity = i })
-        t[#t + 1] = ('%%#Diagnostic%s#%s%%*'):format(vim.diagnostic.severity[i], count)
+        t[i] = ('%%#Diagnostic%s#%d%%*'):format(names[i], counts[i] or 0)
       end
       return (' [%s]'):format(table.concat(t, ' '))
     end,
-    cond = function()
-      return tonumber(vim.fn.pumvisible()) == 0
+    init = function(refresh)
+      local enable = diagnostic.enable
+      if type(enable) ~= 'function' then
+        return
+      end
+      diagnostic.enable = function(...)
+        local ret = enable(...)
+        vim.schedule(refresh)
+        return ret
+      end
     end,
-    event = { 'DiagnosticChanged', 'BufEnter', 'LspAttach', 'LspDetach' },
+    label = 'diagnostic',
+    event = { 'DiagnosticChanged', 'LspAttach', 'LspDetach' },
   }
 end
 
----@private
-local function binary_search(tbl, line)
-  local left = 1
-  local right = #tbl
-  local mid = 0
-
-  while true do
-    mid = bit.rshift(left + right, 1)
-    if not tbl[mid] then
-      return
-    end
-
-    local range = tbl[mid].range or tbl[mid].location.range
-    if not range then
-      return
-    end
-
-    if line >= range.start.line and line <= range['end'].line then
-      return mid
-    elseif line < range.start.line then
-      right = mid - 1
-    else
-      left = mid + 1
-    end
-    if left > right then
-      return
-    end
-  end
+local function symbol_range(sym)
+  return sym.range or (sym.location and sym.location.range)
 end
 
-function M.doucment_symbol()
+local function find_symbol(symbols, line)
+  local best, best_span
+  for _, sym in ipairs(symbols) do
+    local r = symbol_range(sym)
+    if r and line >= r.start.line and line <= r['end'].line then
+      local span = r['end'].line - r.start.line
+      if not best or span < best_span then
+        best, best_span = sym, span
+      end
+    end
+  end
+  if best and type(best.children) == 'table' then
+    return find_symbol(best.children, line) or best
+  end
+  return best
+end
+
+function M.document_symbol()
+  local method = 'textDocument/documentSymbol'
   return {
-    stl = function()
-      return coroutine.create(function(pieces, idx)
-        local params = { textDocument = lsp.util.make_text_document_params() }
-        local co = coroutine.running()
-        lsp.buf_request(0, 'textDocument/documentSymbol', params, function(err, result, ctx)
-          if err or not api.nvim_buf_is_loaded(ctx.bufnr) then
+    stl = function(buf, _, done, guard)
+      if #lsp.get_clients({ bufnr = buf, method = method }) == 0 then
+        return done('')
+      end
+      local win = buf == api.nvim_get_current_buf() and api.nvim_get_current_win()
+        or vim.fn.bufwinid(buf)
+      if win == -1 then
+        return
+      end
+      local line = api.nvim_win_get_cursor(win)[1] - 1
+      local params = { textDocument = lsp.util.make_text_document_params(buf) }
+      lsp.buf_request_all(
+        buf,
+        method,
+        params,
+        guard(function(results)
+          if not api.nvim_buf_is_valid(buf) then
             return
           end
-          local lnum = api.nvim_win_get_cursor(0)[1]
-          local mid = binary_search(result, lnum)
-          if not mid then
-            return
+          for _, res in pairs(results or {}) do
+            local result = res.result
+            if not (res.err or res.error) and type(result) == 'table' then
+              local sym = find_symbol(result, line)
+              if sym then
+                return done((' %s '):format(esc(sym.name)))
+              end
+            end
           end
-          coroutine.resume(co, result[mid])
+          done('')
         end)
-        local data = coroutine.yield()
-        pieces[idx] = (' %s '):format(data.name)
-      end)
+      )
     end,
     async = true,
     name = 'DocumentSymbol',
     event = { 'CursorHold' },
   }
 end
+M.doucment_symbol = M.document_symbol
 
 return M
